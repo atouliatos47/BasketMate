@@ -14,21 +14,33 @@ const pool = new Pool({
 });
 
 async function initDb() {
+    // Stores table
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS stores (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            color TEXT NOT NULL DEFAULT '#005EA5',
+            emoji TEXT NOT NULL DEFAULT '🏪',
+            sort_order INTEGER NOT NULL DEFAULT 0
+        )
+    `);
+
+    // Aisles table
     await pool.query(`
         CREATE TABLE IF NOT EXISTS aisles (
             id SERIAL PRIMARY KEY,
+            store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE,
             name TEXT NOT NULL,
-            sort_order INTEGER NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
             products JSONB NOT NULL DEFAULT '[]'
         )
     `);
-    // Add products column if upgrading existing database
-    await pool.query(`
-        ALTER TABLE aisles ADD COLUMN IF NOT EXISTS products JSONB NOT NULL DEFAULT '[]'
-    `);
+
+    // Items table
     await pool.query(`
         CREATE TABLE IF NOT EXISTS items (
             id SERIAL PRIMARY KEY,
+            store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE,
             name TEXT NOT NULL,
             aisle_id INTEGER REFERENCES aisles(id) ON DELETE SET NULL,
             quantity INTEGER NOT NULL DEFAULT 1,
@@ -38,39 +50,27 @@ async function initDb() {
         )
     `);
 
-    // Seed aisles if empty
-    const { rows } = await pool.query('SELECT COUNT(*) FROM aisles');
+    // Add store_id to existing tables if upgrading
+    await pool.query(`ALTER TABLE aisles ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE`);
+
+    // Seed stores if empty
+    const { rows } = await pool.query('SELECT COUNT(*) FROM stores');
     if (parseInt(rows[0].count) === 0) {
-        const aisles = [
-            'Fresh Fruit & Veg',
-            'Bakery',
-            'Meat & Poultry',
-            'Fish & Seafood',
-            'Dairy & Eggs',
-            'Deli & Cheese',
-            'Frozen Food',
-            'Breakfast & Cereals',
-            'Tins, Cans & Packets',
-            'Pasta, Rice & Noodles',
-            'Sauces, Oils & Condiments',
-            'Biscuits & Snacks',
-            'Confectionery & Sweets',
-            'Soft Drinks & Juice',
-            'Tea, Coffee & Hot Drinks',
-            'Alcohol & Beer',
-            'Toiletries & Personal Care',
-            'Cleaning & Household',
-            'Baby & Toddler',
-            'World Foods',
-            'Health & Beauty'
+        const stores = [
+            { name: 'Tesco',       color: '#005EA5', emoji: '🔵', sort_order: 1 },
+            { name: 'Iceland',     color: '#D61F26', emoji: '🔴', sort_order: 2 },
+            { name: 'Lidl',        color: '#0050AA', emoji: '🟡', sort_order: 3 },
+            { name: "Sainsbury's", color: '#F47920', emoji: '🟠', sort_order: 4 },
+            { name: 'B&M',         color: '#6B2D8B', emoji: '🟣', sort_order: 5 },
         ];
-        for (let i = 0; i < aisles.length; i++) {
+        for (const s of stores) {
             await pool.query(
-                'INSERT INTO aisles (name, sort_order) VALUES ($1, $2)',
-                [aisles[i], i + 1]
+                'INSERT INTO stores (name, color, emoji, sort_order) VALUES ($1,$2,$3,$4)',
+                [s.name, s.color, s.emoji, s.sort_order]
             );
         }
-        console.log('Aisles seeded!');
+        console.log('Stores seeded!');
     }
 
     console.log('Database ready');
@@ -85,20 +85,20 @@ function broadcast(event, data) {
 }
 
 // ===== HELPERS =====
-function mapItem(row) {
-    return {
-        id:          row.id,
-        name:        row.name,
-        aisleId:     row.aisle_id,
-        quantity:    row.quantity,
-        isFavourite: row.is_favourite,
-        isChecked:   row.is_checked,
-        addedAt:     row.added_at
-    };
+function mapStore(row) {
+    return { id: row.id, name: row.name, color: row.color, emoji: row.emoji, sortOrder: row.sort_order };
 }
 
 function mapAisle(row) {
-    return { id: row.id, name: row.name, sortOrder: row.sort_order, products: row.products || [] };
+    return { id: row.id, storeId: row.store_id, name: row.name, sortOrder: row.sort_order, products: row.products || [] };
+}
+
+function mapItem(row) {
+    return {
+        id: row.id, storeId: row.store_id, name: row.name,
+        aisleId: row.aisle_id, quantity: row.quantity,
+        isFavourite: row.is_favourite, isChecked: row.is_checked, addedAt: row.added_at
+    };
 }
 
 async function getBody(req) {
@@ -147,32 +147,111 @@ const server = http.createServer(async (req, res) => {
     // ===== SSE =====
     if (p.pathname === '/events' && req.method === 'GET') {
         res.writeHead(200, {
-            'Content-Type':  'text/event-stream',
+            'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
-            'Connection':    'keep-alive'
+            'Connection': 'keep-alive'
         });
         try {
-            const [ir, ar] = await Promise.all([
-                pool.query('SELECT * FROM items ORDER BY added_at ASC'),
-                pool.query('SELECT * FROM aisles ORDER BY sort_order ASC')
+            const [sr, ar, ir] = await Promise.all([
+                pool.query('SELECT * FROM stores ORDER BY sort_order ASC'),
+                pool.query('SELECT * FROM aisles ORDER BY sort_order ASC'),
+                pool.query('SELECT * FROM items ORDER BY added_at ASC')
             ]);
             res.write(`event: init\ndata: ${JSON.stringify({
-                items:  ir.rows.map(mapItem),
-                aisles: ar.rows.map(mapAisle)
+                stores: sr.rows.map(mapStore),
+                aisles: ar.rows.map(mapAisle),
+                items:  ir.rows.map(mapItem)
             })}\n\n`);
-        } catch (e) {
-            console.error('SSE init error:', e);
-        }
+        } catch(e) { console.error('SSE init error:', e); }
         clients.add(res);
         req.on('close', () => clients.delete(res));
         return;
     }
 
+    // ===== GET STORES =====
+    if (p.pathname === '/stores' && req.method === 'GET') {
+        const r = await pool.query('SELECT * FROM stores ORDER BY sort_order ASC');
+        res.writeHead(200); res.end(JSON.stringify(r.rows.map(mapStore)));
+        return;
+    }
+
+    // ===== ADD STORE =====
+    if (p.pathname === '/stores' && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            const r = await pool.query(
+                `INSERT INTO stores (name, color, emoji, sort_order)
+                 VALUES ($1,$2,$3,(SELECT COALESCE(MAX(sort_order),0)+1 FROM stores)) RETURNING *`,
+                [b.name, b.color || '#005EA5', b.emoji || '🏪']
+            );
+            const store = mapStore(r.rows[0]);
+            broadcast('newStore', store);
+            res.writeHead(201); res.end(JSON.stringify(store));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== DELETE STORE =====
+    const delStoreMatch = p.pathname.match(/^\/stores\/(\d+)\/delete$/);
+    if (delStoreMatch && req.method === 'POST') {
+        try {
+            const id = parseInt(delStoreMatch[1]);
+            await pool.query('DELETE FROM stores WHERE id=$1', [id]);
+            broadcast('deleteStore', { id });
+            res.end(JSON.stringify({ success: true }));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
     // ===== GET AISLES =====
     if (p.pathname === '/aisles' && req.method === 'GET') {
-        const r = await pool.query('SELECT * FROM aisles ORDER BY sort_order ASC');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(r.rows.map(mapAisle)));
+        const storeId = p.query.storeId;
+        const r = storeId
+            ? await pool.query('SELECT * FROM aisles WHERE store_id=$1 ORDER BY sort_order ASC', [storeId])
+            : await pool.query('SELECT * FROM aisles ORDER BY sort_order ASC');
+        res.writeHead(200); res.end(JSON.stringify(r.rows.map(mapAisle)));
+        return;
+    }
+
+    // ===== ADD AISLE =====
+    if (p.pathname === '/aisles' && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            const r = await pool.query(
+                `INSERT INTO aisles (store_id, name, sort_order, products)
+                 VALUES ($1,$2,(SELECT COALESCE(MAX(sort_order),0)+1 FROM aisles WHERE store_id=$1),'[]') RETURNING *`,
+                [b.storeId, b.name]
+            );
+            const aisle = mapAisle(r.rows[0]);
+            broadcast('newAisle', aisle);
+            res.writeHead(201); res.end(JSON.stringify(aisle));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== DELETE AISLE =====
+    const delAisleMatch = p.pathname.match(/^\/aisles\/(\d+)\/delete$/);
+    if (delAisleMatch && req.method === 'POST') {
+        try {
+            const id = parseInt(delAisleMatch[1]);
+            await pool.query('DELETE FROM items WHERE aisle_id=$1', [id]);
+            await pool.query('DELETE FROM aisles WHERE id=$1', [id]);
+            broadcast('deleteAisle', { id });
+            res.end(JSON.stringify({ success: true }));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== RENAME AISLE =====
+    const renameAisleMatch = p.pathname.match(/^\/aisles\/(\d+)\/rename$/);
+    if (renameAisleMatch && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            const r = await pool.query('UPDATE aisles SET name=$1 WHERE id=$2 RETURNING *', [b.name, parseInt(renameAisleMatch[1])]);
+            const aisle = mapAisle(r.rows[0]);
+            broadcast('updateAisle', aisle);
+            res.end(JSON.stringify(aisle));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
@@ -185,18 +264,12 @@ const server = http.createServer(async (req, res) => {
             const r = await pool.query('SELECT products FROM aisles WHERE id=$1', [id]);
             if (!r.rows.length) { res.writeHead(404); return res.end(JSON.stringify({ error: 'Not found' })); }
             const products = r.rows[0].products || [];
-            if (!products.includes(b.name)) {
-                products.push(b.name);
-                products.sort((a, z) => a.localeCompare(z));
-            }
-            const updated = await pool.query(
-                'UPDATE aisles SET products=$1 WHERE id=$2 RETURNING *',
-                [JSON.stringify(products), id]
-            );
+            if (!products.includes(b.name)) { products.push(b.name); products.sort((a, z) => a.localeCompare(z)); }
+            const updated = await pool.query('UPDATE aisles SET products=$1 WHERE id=$2 RETURNING *', [JSON.stringify(products), id]);
             const aisle = mapAisle(updated.rows[0]);
             broadcast('updateAisle', aisle);
             res.end(JSON.stringify(aisle));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
@@ -209,22 +282,21 @@ const server = http.createServer(async (req, res) => {
             const r = await pool.query('SELECT products FROM aisles WHERE id=$1', [id]);
             if (!r.rows.length) { res.writeHead(404); return res.end(JSON.stringify({ error: 'Not found' })); }
             const products = (r.rows[0].products || []).filter(p => p !== b.name);
-            const updated = await pool.query(
-                'UPDATE aisles SET products=$1 WHERE id=$2 RETURNING *',
-                [JSON.stringify(products), id]
-            );
+            const updated = await pool.query('UPDATE aisles SET products=$1 WHERE id=$2 RETURNING *', [JSON.stringify(products), id]);
             const aisle = mapAisle(updated.rows[0]);
             broadcast('updateAisle', aisle);
             res.end(JSON.stringify(aisle));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
     // ===== GET ITEMS =====
     if (p.pathname === '/items' && req.method === 'GET') {
-        const r = await pool.query('SELECT * FROM items ORDER BY added_at ASC');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(r.rows.map(mapItem)));
+        const storeId = p.query.storeId;
+        const r = storeId
+            ? await pool.query('SELECT * FROM items WHERE store_id=$1 ORDER BY added_at ASC', [storeId])
+            : await pool.query('SELECT * FROM items ORDER BY added_at ASC');
+        res.writeHead(200); res.end(JSON.stringify(r.rows.map(mapItem)));
         return;
     }
 
@@ -233,15 +305,31 @@ const server = http.createServer(async (req, res) => {
         try {
             const b = await getBody(req);
             const r = await pool.query(
-                `INSERT INTO items (name, aisle_id, quantity, is_favourite)
-                 VALUES ($1, $2, $3, $4) RETURNING *`,
-                [b.name, b.aisleId || null, b.quantity || 1, b.isFavourite || false]
+                `INSERT INTO items (store_id, name, aisle_id, quantity, is_favourite)
+                 VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+                [b.storeId, b.name, b.aisleId || null, b.quantity || 1, b.isFavourite || false]
             );
             const item = mapItem(r.rows[0]);
             broadcast('newItem', item);
-            res.writeHead(201, { 'Content-Type': 'application/json' });
+            res.writeHead(201); res.end(JSON.stringify(item));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== UPDATE QUANTITY =====
+    const qtyMatch = p.pathname.match(/^\/items\/(\d+)\/quantity$/);
+    if (qtyMatch && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            const r = await pool.query(
+                'UPDATE items SET quantity=$1 WHERE id=$2 RETURNING *',
+                [b.quantity, parseInt(qtyMatch[1])]
+            );
+            if (!r.rows.length) { res.writeHead(404); return res.end(JSON.stringify({ error: 'Not found' })); }
+            const item = mapItem(r.rows[0]);
+            broadcast('updateItem', item);
             res.end(JSON.stringify(item));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
@@ -249,15 +337,12 @@ const server = http.createServer(async (req, res) => {
     const checkMatch = p.pathname.match(/^\/items\/(\d+)\/check$/);
     if (checkMatch && req.method === 'POST') {
         try {
-            const r = await pool.query(
-                `UPDATE items SET is_checked = NOT is_checked WHERE id=$1 RETURNING *`,
-                [parseInt(checkMatch[1])]
-            );
+            const r = await pool.query('UPDATE items SET is_checked=NOT is_checked WHERE id=$1 RETURNING *', [parseInt(checkMatch[1])]);
             if (!r.rows.length) { res.writeHead(404); return res.end(JSON.stringify({ error: 'Not found' })); }
             const item = mapItem(r.rows[0]);
             broadcast('updateItem', item);
             res.end(JSON.stringify(item));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
@@ -265,15 +350,12 @@ const server = http.createServer(async (req, res) => {
     const favMatch = p.pathname.match(/^\/items\/(\d+)\/favourite$/);
     if (favMatch && req.method === 'POST') {
         try {
-            const r = await pool.query(
-                `UPDATE items SET is_favourite = NOT is_favourite WHERE id=$1 RETURNING *`,
-                [parseInt(favMatch[1])]
-            );
+            const r = await pool.query('UPDATE items SET is_favourite=NOT is_favourite WHERE id=$1 RETURNING *', [parseInt(favMatch[1])]);
             if (!r.rows.length) { res.writeHead(404); return res.end(JSON.stringify({ error: 'Not found' })); }
             const item = mapItem(r.rows[0]);
             broadcast('updateItem', item);
             res.end(JSON.stringify(item));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
@@ -284,17 +366,18 @@ const server = http.createServer(async (req, res) => {
             await pool.query('DELETE FROM items WHERE id=$1', [parseInt(delMatch[1])]);
             broadcast('deleteItem', { id: parseInt(delMatch[1]) });
             res.end(JSON.stringify({ success: true }));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
-    // ===== CLEAR CHECKED ITEMS =====
+    // ===== CLEAR CHECKED =====
     if (p.pathname === '/items/clear-checked' && req.method === 'POST') {
         try {
-            const r = await pool.query('DELETE FROM items WHERE is_checked=true RETURNING id');
+            const b = await getBody(req);
+            const r = await pool.query('DELETE FROM items WHERE is_checked=true AND store_id=$1 RETURNING id', [b.storeId]);
             r.rows.forEach(row => broadcast('deleteItem', { id: row.id }));
             res.end(JSON.stringify({ deleted: r.rows.length }));
-        } catch (e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
 
