@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trolleymate-v1';
+const CACHE_NAME = 'trolleymate-v3';
 const ASSETS = [
     '/',
     '/index.html',

@@ -383,6 +383,27 @@ const UI = {
         try {
             const result = await API.toggleCheck(id);
             if (result && result.isChecked) {
+                // Update local state immediately and show crossed out
+                const idx = API.items.findIndex(i => i.id === id);
+                if (idx !== -1) API.items[idx].isChecked = true;
+                UI.renderList();
+                // Delete after short delay
+                setTimeout(async () => {
+                    try { await API.deleteItem(id); } catch(e) {}
+                    // Force remove from local state regardless
+                    API.items = API.items.filter(i => i.id !== id);
+                    UI.renderList();
+                    UI.renderStats();
+                }, 800);
+            }
+        } catch(e) {
+            console.log('handleCheck error:', e);
+        }
+    },
+    async handleCheck(id) {
+        try {
+            const result = await API.toggleCheck(id);
+            if (result && result.isChecked) {
                 // Update local state immediately
                 const idx = API.items.findIndex(i => i.id === id);
                 if (idx !== -1) API.items[idx].isChecked = true;

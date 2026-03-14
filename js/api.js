@@ -84,6 +84,11 @@ const API = {
             this.items = this.items.filter(i => i.id !== id);
             UI.renderList();
             UI.renderHome();
+            // Also refresh shopping mode if open
+            if (document.getElementById('shoppingModeOverlay') &&
+                !document.getElementById('shoppingModeOverlay').classList.contains('hidden')) {
+                App.renderShoppingModeList();
+            }
         });
 
         this.eventSource.onerror = () => {
