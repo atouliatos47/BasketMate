@@ -13,7 +13,8 @@ const API = {
             this.aisles = data.aisles;
             console.log('Received init event:', this.items.length, 'items,', this.aisles.length, 'aisles');
             UI.render();
-            Utils.updateConnectionBadge(true);
+            const badge = document.getElementById('connectionBadge');
+            if (badge) { badge.textContent = '● Live'; badge.style.background = 'rgba(255,255,255,0.25)'; }
         });
 
         this.eventSource.addEventListener('newItem', (e) => {
@@ -43,7 +44,8 @@ const API = {
         });
 
         this.eventSource.onerror = () => {
-            Utils.updateConnectionBadge(false);
+            const badge = document.getElementById('connectionBadge');
+            if (badge) { badge.textContent = '○ Offline'; }
             setTimeout(() => this.connectSSE(), 5000);
         };
     },
