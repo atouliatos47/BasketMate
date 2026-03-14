@@ -229,6 +229,22 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // ===== REORDER AISLES =====
+    if (p.pathname === '/aisles/reorder' && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            // b.order is array of { id, sortOrder }
+            for (const item of b.order) {
+                await pool.query('UPDATE aisles SET sort_order=$1 WHERE id=$2', [item.sortOrder, item.id]);
+            }
+            // Broadcast updated aisles
+            const r = await pool.query('SELECT * FROM aisles ORDER BY sort_order ASC');
+            r.rows.map(mapAisle).forEach(a => broadcast('updateAisle', a));
+            res.end(JSON.stringify({ success: true }));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
     // ===== DELETE AISLE =====
     const delAisleMatch = p.pathname.match(/^\/aisles\/(\d+)\/delete$/);
     if (delAisleMatch && req.method === 'POST') {

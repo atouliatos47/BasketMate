@@ -116,6 +116,16 @@ const API = {
         return await r.json();
     },
 
+    async reorderAisles(order) {
+        const r = await fetch('/aisles/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order })
+        });
+        if (!r.ok) throw new Error('Failed to reorder aisles');
+        return await r.json();
+    },
+
     async deleteAisle(id) {
         const r = await fetch(`/aisles/${id}/delete`, { method: 'POST' });
         if (!r.ok) throw new Error('Failed to delete aisle');

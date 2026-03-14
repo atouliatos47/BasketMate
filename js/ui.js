@@ -101,6 +101,40 @@ const UI = {
             ? aisles.sort((a, b) => a.sortOrder - b.sortOrder).map(a => this.renderAisleCard(a)).join('')
             : `<div class="empty-state"><div class="empty-icon">🏪</div><p>No aisles yet!</p><p class="empty-sub">Tap + Add Aisle below.</p></div>`;
         container.innerHTML = `${aislesHtml}<button class="add-aisle-btn" onclick="UI.showAddAisle()">＋ Add Aisle</button>`;
+        this.initSortable(container);
+    },
+
+    initSortable(container) {
+        if (typeof Sortable === 'undefined') return;
+        if (container._sortable) container._sortable.destroy();
+        container._sortable = new Sortable(container, {
+            animation: 180,
+            delay: 500,
+            delayOnTouchOnly: true,
+            handle: '.aisle-card',
+            draggable: '.aisle-card',
+            ghostClass: 'aisle-drag-ghost',
+            chosenClass: 'aisle-drag-chosen',
+            forceFallback: false,
+            onEnd: async (evt) => {
+                // Build new sort order from current DOM
+                const cards = container.querySelectorAll('.aisle-card');
+                const order = Array.from(cards).map((card, index) => ({
+                    id: parseInt(card.dataset.aisleId),
+                    sortOrder: index + 1
+                }));
+                // Update local state immediately
+                order.forEach(({ id, sortOrder }) => {
+                    const aisle = API.aisles.find(a => a.id === id);
+                    if (aisle) aisle.sortOrder = sortOrder;
+                });
+                try {
+                    await API.reorderAisles(order);
+                } catch(e) {
+                    Utils.showToast('Failed to save order', true);
+                }
+            }
+        });
     },
 
     renderAisleCard(aisle) {

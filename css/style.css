@@ -1048,3 +1048,20 @@ body {
     .store-header { flex-wrap: wrap; height: auto; padding: 10px 14px; gap: 8px; }
     .modal { border-radius: var(--r-xl) var(--r-xl) 0 0; }
 }
+
+/* ===== DRAG & DROP ===== */
+.aisle-drag-ghost {
+    opacity: 0.4;
+    border: 2px dashed var(--accent) !important;
+    background: var(--accent-dim) !important;
+}
+
+.aisle-drag-chosen {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    transform: scale(1.02);
+    cursor: grabbing !important;
+}
+
+.aisle-card {
+    cursor: grab;
+}
