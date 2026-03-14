@@ -3,10 +3,14 @@ const App = {
 
     async requestWakeLock() {
         try {
+            // Lock orientation to portrait
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('portrait').catch(() => {});
+            }
+            // Keep screen awake
             if ('wakeLock' in navigator) {
                 this.wakeLock = await navigator.wakeLock.request('screen');
                 console.log('Screen wake lock active');
-                // Re-acquire if tab becomes visible again
                 document.addEventListener('visibilitychange', async () => {
                     if (document.visibilityState === 'visible' && this.wakeLock === null) {
                         await this.requestWakeLock();
@@ -20,6 +24,11 @@ const App = {
 
     async releaseWakeLock() {
         try {
+            // Unlock orientation
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+            // Release wake lock
             if (this.wakeLock) {
                 await this.wakeLock.release();
                 this.wakeLock = null;
