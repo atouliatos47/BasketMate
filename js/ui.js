@@ -221,8 +221,8 @@ const UI = {
                         data-in-list="${inList}">
                         <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
                         <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
-                        <button class="chip-price-btn" onclick="event.stopPropagation(); UI.lookupPrice('${name.replace(/'/g, "\'")}', ${aisleId})" title="Check price">£</button>
                     </div>
+
                 </div>`;
             return `
                 <div class="panel-chip ${inList ? 'in-list' : ''}"
@@ -280,28 +280,55 @@ const UI = {
         overlay.classList.add('show');
 
         try {
-            const storeName = store.name.toLowerCase().replace("'", '').replace('&', 'and').replace(' ', '-');
+            const storeName = store.name.toLowerCase()
+                .replace(/'/g, '')
+                .replace(/&/g, 'and')
+                .replace(/\s+/g, '-');
             const r = await fetch(`/prices?q=${encodeURIComponent(name)}&store=${encodeURIComponent(storeName)}`);
-            const data = await r.json();
+            const raw = await r.json();
+
+            // Handle multiple response formats
+            let items = [];
+            if (Array.isArray(raw)) items = raw;
+            else if (raw.products && Array.isArray(raw.products)) items = raw.products;
+            else if (raw.data && Array.isArray(raw.data)) items = raw.data;
+            else if (raw.results && Array.isArray(raw.results)) items = raw.results;
+            else if (raw.items && Array.isArray(raw.items)) items = raw.items;
 
             const results = document.getElementById('priceResults');
-            if (!data || !data.length) {
-                results.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:16px;">No prices found for this product.</p>';
+            if (!results) return;
+
+            if (!items.length) {
+                results.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:16px;">No prices found.<br><small>Try a more specific search term.</small></p>';
                 return;
             }
 
-            results.innerHTML = data.slice(0, 5).map(item => `
+            results.innerHTML = items.slice(0, 5).map(item => {
+                // Handle different field names
+                const title = item.name || item.title || item.product_name || item.productName || name;
+                const price = item.price || item.current_price || item.currentPrice || item.cost || '?';
+                const image = item.image || item.image_url || item.imageUrl || item.img || null;
+                const size = item.size || item.weight || item.quantity || item.volume || '';
+                const priceNum = parseFloat(price);
+
+                return `
                 <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f4f4f8;border-radius:12px;margin-bottom:8px;">
-                    ${item.image ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;background:white;">` : '<div style="width:48px;height:48px;background:#e5e7eb;border-radius:8px;"></div>'}
+                    ${image ? `<img src="${image}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;background:white;" onerror="this.style.display='none'">` : ''}
                     <div style="flex:1;min-width:0;">
-                        <div style="font-size:13px;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(item.name || item.title || name)}</div>
-                        <div style="font-size:12px;color:#6b7280;margin-top:2px;">${item.size || item.weight || ''}</div>
+                        <div style="font-size:13px;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(title)}</div>
+                        ${size ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">${Utils.escapeHtml(String(size))}</div>` : ''}
                     </div>
-                    <div style="font-size:18px;font-weight:800;color:var(--accent);flex-shrink:0;">£${parseFloat(item.price).toFixed(2)}</div>
-                </div>`).join('');
+                    <div style="font-size:18px;font-weight:800;color:var(--accent);flex-shrink:0;">${isNaN(priceNum) ? price : '£' + priceNum.toFixed(2)}</div>
+                </div>`;
+            }).join('');
+
+            // Debug: log raw response for troubleshooting
+            console.log('Price API raw response:', JSON.stringify(raw).slice(0, 500));
+
         } catch(e) {
             const results = document.getElementById('priceResults');
-            if (results) results.innerHTML = '<p style="color:#dc2626;text-align:center;padding:16px;">Failed to fetch prices. Try again later.</p>';
+            if (results) results.innerHTML = `<p style="color:#dc2626;text-align:center;padding:16px;">Failed to fetch prices.<br><small>${e.message}</small></p>`;
+            console.error('Price lookup error:', e);
         }
     },
 
