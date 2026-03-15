@@ -133,6 +133,8 @@ const App = {
         document.documentElement.style.setProperty('--store-color-dark', App.darken(store.color));
         document.documentElement.style.setProperty('--accent', store.color);
         document.documentElement.style.setProperty('--accent-dim', store.color + '20');
+        document.documentElement.style.setProperty('--home-btn-color', store.color);
+        document.documentElement.style.setProperty('--home-btn-shadow', store.color + '80');
 
         // Update header with logo
         const logoDomain = UI.getStoreLogo(store.name);
@@ -171,9 +173,11 @@ const App = {
         // Switch nav back
         document.getElementById('navStoreScreen').classList.add('hidden');
         document.getElementById('navHomeScreen').classList.remove('hidden');
-        // Reset accent to default
+        // Reset accent and home button to default
         document.documentElement.style.setProperty('--accent', '#2563EB');
         document.documentElement.style.setProperty('--accent-dim', '#2563EB20');
+        document.documentElement.style.setProperty('--home-btn-color', '#0D9488');
+        document.documentElement.style.setProperty('--home-btn-shadow', '#0D948880');
         UI.renderHome();
     },
 

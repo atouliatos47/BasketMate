@@ -817,7 +817,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, #FF8C42, #F47920);
+    background: var(--home-btn-color, #0D9488);
     border: none;
     width: 60px;
     height: 60px;
@@ -826,15 +826,14 @@ body {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -58%);
-    box-shadow: 0 8px 24px rgba(244,121,32,0.45), 0 2px 6px rgba(244,121,32,0.3);
-    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+    box-shadow: 0 8px 24px var(--home-btn-shadow, rgba(13,148,136,0.5));
+    transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
     -webkit-tap-highlight-color: transparent;
     padding: 0;
 }
 
 .nav-btn-home:active {
     transform: translate(-50%, -48%) scale(0.92);
-    box-shadow: 0 4px 12px rgba(244,121,32,0.3);
 }
 
 .nav-home-icon { display: flex; align-items: center; justify-content: center; }
