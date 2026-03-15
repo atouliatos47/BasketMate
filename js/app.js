@@ -60,6 +60,9 @@ const App = {
             { name: "Sainsbury's",  color: '#F47920', domain: 'sainsburys.co.uk' },
             { name: 'B&M',          color: '#6B2D8B', domain: 'bmstores.co.uk' },
             { name: 'Asda',         color: '#78BE20', domain: 'asda.com' },
+            { name: 'Morrisons',    color: '#00AA4F', domain: 'morrisons.com' },
+            { name: 'M&S',          color: '#000000', domain: 'marksandspencer.com' },
+            { name: 'Aldi',         color: '#003082', domain: 'aldi.co.uk' },
         ];
 
         // Render store avatars with staggered animation delay
@@ -94,19 +97,23 @@ const App = {
 
     // ===== SMART HOME BUTTON =====
     smartHome() {
-        // If aisle panel is open -> close it, stay in store
+        // Level 1: Aisle panel open -> close it, back to store aisles
         const aislePanel = document.getElementById('aislePanelOverlay');
         if (aislePanel.classList.contains('show')) {
             UI.closeAislePanel();
             return;
         }
-        // If shopping mode is open -> close it, stay in store
+        // Level 2: Shopping mode open -> close it, reopen last aisle if there was one
         const shopMode = document.getElementById('shoppingModeOverlay');
         if (!shopMode.classList.contains('hidden')) {
             this.closeShoppingMode();
+            // If there was an aisle panel open before, reopen it
+            if (UI.lastAislePanel) {
+                setTimeout(() => UI.openAislePanel(UI.lastAislePanel), 50);
+            }
             return;
         }
-        // If in a store -> go to home screen
+        // Level 3: In a store -> go to home screen
         if (API.currentStoreId) {
             this.goHome();
             return;
@@ -124,6 +131,8 @@ const App = {
         // Apply store theme colour
         document.documentElement.style.setProperty('--store-color', store.color);
         document.documentElement.style.setProperty('--store-color-dark', App.darken(store.color));
+        document.documentElement.style.setProperty('--accent', store.color);
+        document.documentElement.style.setProperty('--accent-dim', store.color + '20');
 
         // Update header with logo
         const logoDomain = UI.getStoreLogo(store.name);
@@ -162,6 +171,9 @@ const App = {
         // Switch nav back
         document.getElementById('navStoreScreen').classList.add('hidden');
         document.getElementById('navHomeScreen').classList.remove('hidden');
+        // Reset accent to default
+        document.documentElement.style.setProperty('--accent', '#2563EB');
+        document.documentElement.style.setProperty('--accent-dim', '#2563EB20');
         UI.renderHome();
     },
 

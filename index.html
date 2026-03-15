@@ -70,12 +70,16 @@
             <div class="aisles-container" id="aislesContainer"></div>
         </div>
 
-        <!-- RIGHT: SHOPPING LIST -->
+        <!-- RIGHT: TABS (Shopping List + Favourites) -->
         <div class="list-panel">
             <div class="panel-header">
-                <h2>📋 Shopping List</h2>
+                <div class="list-tabs">
+                    <button class="list-tab active" id="tabList" onclick="UI.switchListTab('list')">📋 List</button>
+                    <button class="list-tab" id="tabFavs" onclick="UI.switchListTab('favs')">⭐ Favourites</button>
+                </div>
             </div>
             <div class="list-container" id="listContainer"></div>
+            <div class="list-container hidden" id="favouritesContainer"></div>
         </div>
 
     </div>

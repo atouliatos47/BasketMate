@@ -18,8 +18,11 @@ const UI = {
             'lidl':         'lidl.co.uk',
             "sainsbury's":  'sainsburys.co.uk',
             'sainsburys':   'sainsburys.co.uk',
-            'b&m':          'bmstores.co.uk',
-            'aldi':         'aldi.co.uk',
+            'b&m':              'bmstores.co.uk',
+            'aldi':             'aldi.co.uk',
+            'morrisons':        'morrisons.com',
+            'marks & spencer':  'marksandspencer.com',
+            'm&s':              'marksandspencer.com',
             'asda':         'asda.com',
             'morrisons':    'morrisons.com',
             'waitrose':     'waitrose.com',
@@ -84,6 +87,27 @@ const UI = {
     },
 
     // ===== STATS =====
+    switchListTab(tab) {
+        const listContainer = document.getElementById('listContainer');
+        const favsContainer = document.getElementById('favouritesContainer');
+        const tabList = document.getElementById('tabList');
+        const tabFavs = document.getElementById('tabFavs');
+        if (!listContainer || !favsContainer) return;
+
+        if (tab === 'list') {
+            listContainer.classList.remove('hidden');
+            favsContainer.classList.add('hidden');
+            tabList.classList.add('active');
+            tabFavs.classList.remove('active');
+        } else {
+            listContainer.classList.add('hidden');
+            favsContainer.classList.remove('hidden');
+            tabList.classList.remove('active');
+            tabFavs.classList.add('active');
+            this.renderFavourites();
+        }
+    },
+
     renderStats() {
         const total   = API.storeItems.length;
         const checked = API.storeItems.filter(i => i.isChecked).length;
@@ -162,6 +186,7 @@ const UI = {
         const aisle = API.storeAisles.find(a => a.id === aisleId);
         if (!aisle) return;
         this.currentAislePanel = aisleId;
+        this.lastAislePanel = aisleId; // Remember for after shopping mode
         document.getElementById('aislePanelTitle').textContent = aisle.name;
         this.renderAislePanelProducts(aisleId);
         document.getElementById('aislePanelOverlay').classList.add('show');
@@ -177,11 +202,27 @@ const UI = {
             container.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>No products yet!</p><p class="empty-sub">Close and tap ⚙️ to add products.</p></div>`;
             return;
         }
+        const favNames = API.storeFavourites.map(f => f.name.toLowerCase());
         container.innerHTML = products.map(name => {
             const listItem = API.storeItems.find(i => i.name.toLowerCase() === name.toLowerCase() && !i.isChecked);
             const inList = !!listItem;
             const qty = listItem ? listItem.quantity : 0;
             const itemId = listItem ? listItem.id : null;
+            const isFav = favNames.includes(name.toLowerCase());
+            return `
+                <div class="panel-chip-wrapper">
+                    <button class="chip-fav-btn ${isFav ? 'active' : ''}"
+                        onclick="UI.toggleFavourite('${name.replace(/'/g, "\'")}', ${aisleId}, this)">⭐</button>
+                    <div class="panel-chip ${inList ? 'in-list' : ''}"
+                        onclick="UI.handlePanelProductTap('${name.replace(/'/g, "\'")}', ${aisleId}, this)"
+                        data-item-id="${itemId}"
+                        data-aisle-id="${aisleId}"
+                        data-name="${name.replace(/'/g, "\'")}"
+                        data-in-list="${inList}">
+                        <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
+                        <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
+                    </div>
+                </div>`;
             return `
                 <div class="panel-chip ${inList ? 'in-list' : ''}"
                     onclick="UI.handlePanelProductTap('${name.replace(/'/g, "\'")}', ${aisleId}, this)"
@@ -189,6 +230,8 @@ const UI = {
                     data-aisle-id="${aisleId}"
                     data-name="${name.replace(/'/g, "\'")}"
                     data-in-list="${inList}">
+                    <button class="chip-fav-btn ${isFav ? 'active' : ''}"
+                        onclick="event.stopPropagation(); UI.toggleFavourite('${name.replace(/'/g, "\'")}', ${aisleId}, this)">⭐</button>
                     <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
                     <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
                 </div>`;
@@ -275,6 +318,74 @@ const UI = {
             chipEl.style.opacity = '1';
             chipEl.style.pointerEvents = '';
         }
+    },
+
+    async toggleFavourite(name, aisleId, btn) {
+        const isFav = btn.classList.contains('active');
+        try {
+            if (isFav) {
+                await API.removeFavourite(name);
+                btn.classList.remove('active');
+                Utils.showToast(`${name} removed from favourites`);
+            } else {
+                await API.addFavourite(name, aisleId);
+                btn.classList.add('active');
+                Utils.showToast(`${name} saved as favourite ⭐`);
+            }
+        } catch(e) { Utils.showToast('Failed to update favourite', true); }
+    },
+
+    renderFavourites() {
+        const container = document.getElementById('favouritesContainer');
+        if (!container) return;
+
+        const favs = API.storeFavourites;
+
+        if (!favs.length) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⭐</div>
+                    <p>No favourites yet!</p>
+                    <p class="empty-sub">Tap ⭐ on any product in an aisle to save it.</p>
+                </div>`;
+            return;
+        }
+
+        // Group by aisle
+        const grouped = {};
+        favs.forEach(fav => {
+            const aisle = API.storeAisles.find(a => a.id === fav.aisle_id);
+            const key = aisle ? aisle.name : 'Other';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(fav);
+        });
+
+        container.innerHTML = Object.entries(grouped).map(([aisleName, items]) => `
+            <div class="fav-group">
+                <div class="fav-group-header">${aisleName}</div>
+                ${items.map(fav => `
+                    <div class="fav-item" onclick="UI.addFavToList('${fav.name.replace(/'/g, "\'")}', ${fav.aisle_id})">
+                        <span class="fav-item-name">${Utils.escapeHtml(fav.name)}</span>
+                        <span class="fav-add-badge">+ Add</span>
+                    </div>`).join('')}
+            </div>`).join('');
+    },
+
+    async addFavToList(name, aisleId) {
+        try {
+            const existing = API.storeItems.find(i => i.name.toLowerCase() === name.toLowerCase() && !i.isChecked);
+            if (existing) {
+                await fetch(`/items/${existing.id}/quantity`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: existing.quantity + 1 })
+                });
+                Utils.showToast(`${name} x${existing.quantity + 1} 🛒`);
+            } else {
+                await API.addItem({ name, aisleId, quantity: 1 });
+                Utils.showToast(`${name} added! 🛒`);
+            }
+        } catch(e) { Utils.showToast('Failed to add item', true); }
     },
 
     closeAislePanel() {

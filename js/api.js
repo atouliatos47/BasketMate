@@ -2,6 +2,7 @@ const API = {
     stores: [],
     aisles: [],
     items: [],
+    favourites: [],
     currentStoreId: null,
     eventSource: null,
 
@@ -27,6 +28,7 @@ const API = {
             this.stores = data.stores;
             this.aisles = data.aisles;
             this.items  = data.items;
+            this.favourites = data.favourites || [];
             console.log('Init:', this.stores.length, 'stores,', this.aisles.length, 'aisles,', this.items.length, 'items');
             UI.renderHome();
             const badge = document.getElementById('connectionBadge');
@@ -91,6 +93,20 @@ const API = {
             }
         });
 
+        this.eventSource.addEventListener('newFavourite', (e) => {
+            const fav = JSON.parse(e.data);
+            if (fav && !this.favourites.find(f => f.store_id === fav.store_id && f.name === fav.name)) {
+                this.favourites.push(fav);
+            }
+            if (UI.currentAislePanel) UI.renderAislePanelProducts(UI.currentAislePanel);
+        });
+
+        this.eventSource.addEventListener('deleteFavourite', (e) => {
+            const { storeId, name } = JSON.parse(e.data);
+            this.favourites = this.favourites.filter(f => !(f.store_id === storeId && f.name === name));
+            if (UI.currentAislePanel) UI.renderAislePanelProducts(UI.currentAislePanel);
+        });
+
         this.eventSource.onerror = () => {
             const badge = document.getElementById('connectionBadge');
             if (badge) { badge.textContent = '○ Offline'; badge.style.color = 'rgba(255,255,255,0.5)'; }
@@ -131,6 +147,30 @@ const API = {
             body: JSON.stringify({ name, storeId: this.currentStoreId })
         });
         if (!r.ok) throw new Error('Failed to add aisle');
+        return await r.json();
+    },
+
+    get storeFavourites() {
+        return this.favourites.filter(f => f.store_id === this.currentStoreId);
+    },
+
+    async addFavourite(name, aisleId) {
+        const r = await fetch('/favourites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, aisleId, storeId: this.currentStoreId })
+        });
+        if (!r.ok) throw new Error('Failed to add favourite');
+        return await r.json();
+    },
+
+    async removeFavourite(name) {
+        const r = await fetch('/favourites/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, storeId: this.currentStoreId })
+        });
+        if (!r.ok) throw new Error('Failed to remove favourite');
         return await r.json();
     },
 

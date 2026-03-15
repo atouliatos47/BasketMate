@@ -58,11 +58,14 @@ async function initDb() {
     const { rows } = await pool.query('SELECT COUNT(*) FROM stores');
     if (parseInt(rows[0].count) === 0) {
         const stores = [
-            { name: 'Tesco',       color: '#005EA5', emoji: '🔵', sort_order: 1 },
-            { name: 'Iceland',     color: '#D61F26', emoji: '🔴', sort_order: 2 },
-            { name: 'Lidl',        color: '#0050AA', emoji: '🟡', sort_order: 3 },
-            { name: "Sainsbury's", color: '#F47920', emoji: '🟠', sort_order: 4 },
-            { name: 'B&M',         color: '#6B2D8B', emoji: '🟣', sort_order: 5 },
+            { name: 'Tesco',             color: '#005EA5', emoji: '🔵', sort_order: 1 },
+            { name: 'Iceland',           color: '#D61F26', emoji: '🔴', sort_order: 2 },
+            { name: 'Lidl',              color: '#0050AA', emoji: '🟡', sort_order: 3 },
+            { name: "Sainsbury's",       color: '#F47920', emoji: '🟠', sort_order: 4 },
+            { name: 'B&M',               color: '#6B2D8B', emoji: '🟣', sort_order: 5 },
+            { name: "Morrisons",         color: '#00AA4F', emoji: '🟢', sort_order: 6 },
+            { name: "Marks & Spencer",   color: '#000000', emoji: '⚫', sort_order: 7 },
+            { name: 'Aldi',              color: '#003082', emoji: '🔷', sort_order: 8 },
         ];
         for (const s of stores) {
             await pool.query(
@@ -72,6 +75,17 @@ async function initDb() {
         }
         console.log('Stores seeded!');
     }
+
+    // Favourites table
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS favourites (
+            id SERIAL PRIMARY KEY,
+            store_id INTEGER REFERENCES stores(id) ON DELETE CASCADE,
+            aisle_id INTEGER REFERENCES aisles(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            UNIQUE(store_id, name)
+        )
+    `);
 
     console.log('Database ready');
 }
@@ -152,15 +166,17 @@ const server = http.createServer(async (req, res) => {
             'Connection': 'keep-alive'
         });
         try {
-            const [sr, ar, ir] = await Promise.all([
+            const [sr, ar, ir, fr] = await Promise.all([
                 pool.query('SELECT * FROM stores ORDER BY sort_order ASC'),
                 pool.query('SELECT * FROM aisles ORDER BY sort_order ASC'),
-                pool.query('SELECT * FROM items ORDER BY added_at ASC')
+                pool.query('SELECT * FROM items ORDER BY added_at ASC'),
+                pool.query('SELECT * FROM favourites ORDER BY name ASC')
             ]);
             res.write(`event: init\ndata: ${JSON.stringify({
-                stores: sr.rows.map(mapStore),
-                aisles: ar.rows.map(mapAisle),
-                items:  ir.rows.map(mapItem)
+                stores:     sr.rows.map(mapStore),
+                aisles:     ar.rows.map(mapAisle),
+                items:      ir.rows.map(mapItem),
+                favourites: fr.rows
             })}\n\n`);
         } catch(e) { console.error('SSE init error:', e); }
         clients.add(res);
@@ -225,6 +241,43 @@ const server = http.createServer(async (req, res) => {
             const aisle = mapAisle(r.rows[0]);
             broadcast('newAisle', aisle);
             res.writeHead(201); res.end(JSON.stringify(aisle));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== GET FAVOURITES =====
+    if (p.pathname === '/favourites' && req.method === 'GET') {
+        const storeId = p.query.storeId;
+        const r = storeId
+            ? await pool.query('SELECT * FROM favourites WHERE store_id=$1 ORDER BY name ASC', [storeId])
+            : await pool.query('SELECT * FROM favourites ORDER BY name ASC');
+        res.writeHead(200); res.end(JSON.stringify(r.rows));
+        return;
+    }
+
+    // ===== ADD FAVOURITE =====
+    if (p.pathname === '/favourites' && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            const r = await pool.query(
+                `INSERT INTO favourites (store_id, aisle_id, name)
+                 VALUES ($1,$2,$3) ON CONFLICT (store_id, name) DO NOTHING RETURNING *`,
+                [b.storeId, b.aisleId, b.name]
+            );
+            broadcast('newFavourite', r.rows[0] || { storeId: b.storeId, name: b.name });
+            res.writeHead(201); res.end(JSON.stringify({ success: true }));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
+        return;
+    }
+
+    // ===== DELETE FAVOURITE =====
+    const delFavMatch = p.pathname.match(/^\/favourites\/delete$/);
+    if (delFavMatch && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            await pool.query('DELETE FROM favourites WHERE store_id=$1 AND name=$2', [b.storeId, b.name]);
+            broadcast('deleteFavourite', { storeId: b.storeId, name: b.name });
+            res.end(JSON.stringify({ success: true }));
         } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid request' })); }
         return;
     }
