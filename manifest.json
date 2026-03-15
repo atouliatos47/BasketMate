@@ -1,6 +1,6 @@
 {
-  "name": "TrolleyMate",
-  "short_name": "TrolleyMate",
+  "name": "BasketMate",
+  "short_name": "BasketMate",
   "description": "Tesco aisle-sorted shopping list",
   "start_url": "/",
   "display": "standalone",

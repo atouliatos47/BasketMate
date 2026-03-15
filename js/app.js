@@ -40,7 +40,7 @@ const App = {
     },
 
     init() {
-        console.log('TrolleyMate initializing...');
+        console.log('BasketMate initializing...');
         this.setupEventListeners();
         this.showSplash();
         API.connectSSE();

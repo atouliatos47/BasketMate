@@ -455,7 +455,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 initDb().then(() => {
-    server.listen(PORT, () => console.log(`TrolleyMate running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`BasketMate running on port ${PORT}`));
 }).catch(err => {
     console.error('DB init failed:', err);
     process.exit(1);
