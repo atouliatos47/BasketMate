@@ -3,11 +3,9 @@ const App = {
 
     async requestWakeLock() {
         try {
-            // Lock orientation to portrait
             if (screen.orientation && screen.orientation.lock) {
                 await screen.orientation.lock('portrait').catch(() => {});
             }
-            // Keep screen awake
             if ('wakeLock' in navigator) {
                 this.wakeLock = await navigator.wakeLock.request('screen');
                 console.log('Screen wake lock active');
@@ -24,11 +22,9 @@ const App = {
 
     async releaseWakeLock() {
         try {
-            // Unlock orientation
             if (screen.orientation && screen.orientation.unlock) {
                 screen.orientation.unlock();
             }
-            // Release wake lock
             if (this.wakeLock) {
                 await this.wakeLock.release();
                 this.wakeLock = null;
@@ -43,8 +39,17 @@ const App = {
         console.log('BasketMate initializing...');
         this.setupEventListeners();
         this.showSplash();
-        API.connectSSE();
-        API.startKeepAlive();
+
+        // Check if household already saved
+        const hasHousehold = API.loadHousehold();
+        if (hasHousehold) {
+            // Returning user — connect straight away
+            API.connectSSE();
+            API.startKeepAlive();
+        } else {
+            // New user — show household setup after splash
+            setTimeout(() => this.showHouseholdSetup(), 2200);
+        }
     },
 
     showSplash() {
@@ -52,7 +57,6 @@ const App = {
         const storesContainer = document.getElementById('splashStores');
         if (!splash) return;
 
-        // Pre-defined stores to show on splash
         const stores = [
             { name: 'Tesco',        color: '#005EA5', domain: 'tesco.com' },
             { name: 'Iceland',      color: '#D61F26', domain: 'iceland.co.uk' },
@@ -65,28 +69,172 @@ const App = {
             { name: 'Aldi',         color: '#003082', domain: 'aldi.co.uk' },
         ];
 
-        // Render store avatars with staggered animation delay
         storesContainer.innerHTML = stores.map((store, i) => {
             const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
             return `
-                <div class="splash-store" style="animation-delay: ${0.4 + i * 0.12}s">
+                <div class="splash-store" style="animation-delay:${0.4 + i * 0.12}s">
                     <div class="splash-store-avatar" id="splash-avatar-${i}" style="background:white;">
                         <img src="https://www.google.com/s2/favicons?domain=${store.domain}&sz=128"
                             alt="${store.name}"
-                            onerror="document.getElementById('splash-avatar-${i}').style.background='${store.color}';document.getElementById('splash-avatar-${i}').innerHTML='<span style=\'font-size:18px;font-weight:800;color:white;\'>${initials}</span>';"
+                            data-idx="${i}" data-color="${store.color}" data-initials="${initials}"
+                            onerror="var el=document.getElementById('splash-avatar-'+this.dataset.idx);el.style.background=this.dataset.color;el.innerHTML=this.dataset.initials;"
                             style="width:36px;height:36px;object-fit:contain;border-radius:4px;">
                     </div>
                     <span class="splash-store-name">${store.name}</span>
                 </div>`;
         }).join('');
+    },
 
-        // Dismiss after 2.5 seconds
-        setTimeout(() => {
+    // ===== HOUSEHOLD SETUP SCREEN =====
+    showHouseholdSetup() {
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
             splash.classList.add('fade-out');
-            setTimeout(() => {
-                splash.style.display = 'none';
-            }, 600);
-        }, 2500);
+            setTimeout(() => { splash.style.display = 'none'; }, 600);
+        }
+
+        const overlay = document.getElementById('modalOverlay');
+        const modal   = document.getElementById('modal');
+
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:48px;margin-bottom:12px;">🛒</div>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Welcome to BasketMate</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">Create a household to get started,<br>or join an existing one with a code.</p>
+
+                <button onclick="App.createHousehold()"
+                    style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;">
+                    ✨ Create New Household
+                </button>
+
+                <div style="position:relative;margin-bottom:12px;">
+                    <div style="height:1px;background:#e5e7eb;"></div>
+                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:white;padding:0 12px;color:#9ca3af;font-size:13px;">or</span>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="joinCodeInput"
+                        placeholder="Enter household code"
+                        maxlength="6"
+                        style="flex:1;padding:13px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;text-transform:uppercase;letter-spacing:2px;outline:none;text-align:center;"
+                        oninput="this.value=this.value.toUpperCase()">
+                    <button onclick="App.joinHousehold()"
+                        style="padding:13px 18px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+                        Join
+                    </button>
+                </div>
+                <p id="householdError" style="color:#dc2626;font-size:13px;margin:8px 0 0;display:none;"></p>
+            </div>`;
+
+        overlay.classList.add('show');
+        // Prevent closing by clicking outside
+        overlay.onclick = null;
+    },
+
+    async createHousehold() {
+        try {
+            const btn = document.querySelector('#modal button');
+            if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+            const data = await API.createHousehold();
+            this.showHouseholdCode(data.code);
+        } catch(e) {
+            Utils.showToast('Failed to create household', true);
+            const btn = document.querySelector('#modal button');
+            if (btn) { btn.disabled = false; btn.textContent = '✨ Create New Household'; }
+        }
+    },
+
+    showHouseholdCode(code) {
+        const modal = document.getElementById('modal');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:48px;margin-bottom:12px;">🏠</div>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Your Household Code</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">Share this code with your family so they can join your list.</p>
+
+                <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:20px;margin-bottom:20px;">
+                    <div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${code}</div>
+                </div>
+
+                <p style="color:#9ca3af;font-size:12px;margin:0 0 20px;">You can find this code later in the app settings.</p>
+
+                <button onclick="App.startApp()"
+                    style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">
+                    Let's Go! 🛒
+                </button>
+            </div>`;
+    },
+
+    async joinHousehold() {
+        const input = document.getElementById('joinCodeInput');
+        const error = document.getElementById('householdError');
+        const code  = input.value.trim().toUpperCase();
+
+        if (code.length < 6) {
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Please enter a 6-character code.';
+            error.style.display = 'block';
+            return;
+        }
+
+        try {
+            input.disabled = true;
+            error.style.display = 'none';
+            await API.joinHousehold(code);
+            Utils.showToast('Joined household! 🏠');
+            this.startApp();
+        } catch(e) {
+            input.disabled = false;
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Household not found. Check the code and try again.';
+            error.style.display = 'block';
+        }
+    },
+
+    startApp() {
+        const overlay = document.getElementById('modalOverlay');
+        overlay.classList.remove('show');
+        // Restore click-outside-to-close behaviour
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) Utils.closeModal();
+        });
+        API.connectSSE();
+        API.startKeepAlive();
+    },
+
+    showOnboarding() {
+        const splash = document.getElementById('splashScreen');
+        const ob = document.getElementById('onboardingScreen');
+        ob.style.display = 'flex';
+        splash.classList.add('fade-out');
+        setTimeout(() => { splash.style.display = 'none'; }, 600);
+    },
+
+    nextSlide() {
+        const slides = document.querySelectorAll('.ob-slide');
+        const dots   = document.querySelectorAll('.ob-dot');
+        const btn    = document.getElementById('obNextBtn');
+        let current  = [...slides].findIndex(s => s.classList.contains('active'));
+        const next   = current + 1;
+
+        if (next >= slides.length) {
+            this.dismissSplash();
+            return;
+        }
+
+        slides[current].classList.remove('active');
+        slides[next].classList.add('active');
+        dots[current].classList.remove('active');
+        dots[next].classList.add('active');
+
+        btn.textContent = next === slides.length - 1 ? 'Get Started →' : 'Next →';
+    },
+
+    dismissSplash() {
+        const ob = document.getElementById('onboardingScreen');
+        if (!ob) return;
+        ob.classList.add('fade-out');
+        setTimeout(() => { ob.style.display = 'none'; }, 600);
     },
 
     setupEventListeners() {
@@ -97,28 +245,23 @@ const App = {
 
     // ===== SMART HOME BUTTON =====
     smartHome() {
-        // Level 1: Aisle panel open -> close it, back to store aisles
         const aislePanel = document.getElementById('aislePanelOverlay');
         if (aislePanel.classList.contains('show')) {
             UI.closeAislePanel();
             return;
         }
-        // Level 2: Shopping mode open -> close it, reopen last aisle if there was one
         const shopMode = document.getElementById('shoppingModeOverlay');
         if (!shopMode.classList.contains('hidden')) {
             this.closeShoppingMode();
-            // If there was an aisle panel open before, reopen it
             if (UI.lastAislePanel) {
                 setTimeout(() => UI.openAislePanel(UI.lastAislePanel), 50);
             }
             return;
         }
-        // Level 3: In a store -> go to home screen
         if (API.currentStoreId) {
             this.goHome();
             return;
         }
-        // Already on home screen -> do nothing
     },
 
     // ===== STORE SELECTION =====
@@ -128,7 +271,6 @@ const App = {
 
         API.currentStoreId = storeId;
 
-        // Apply store theme colour
         document.documentElement.style.setProperty('--store-color', store.color);
         document.documentElement.style.setProperty('--store-color-dark', App.darken(store.color));
         document.documentElement.style.setProperty('--accent', store.color);
@@ -136,7 +278,6 @@ const App = {
         document.documentElement.style.setProperty('--home-btn-color', store.color);
         document.documentElement.style.setProperty('--home-btn-shadow', store.color + '80');
 
-        // Update header with logo
         const logoDomain = UI.getStoreLogo(store.name);
         const storeTitle = document.getElementById('storeTitle');
         if (logoDomain) {
@@ -150,90 +291,58 @@ const App = {
             storeTitle.textContent = store.name;
         }
 
-        // Show store view, hide home
         document.getElementById('homeScreen').classList.add('hidden');
         document.getElementById('storeScreen').classList.remove('hidden');
 
-        // Switch nav
-        document.getElementById('navHomeScreen').classList.add('hidden');
-        document.getElementById('navStoreScreen').classList.remove('hidden');
-
-        // Render store content
+        this.requestWakeLock();
         UI.renderAisles();
         UI.renderList();
-        UI.renderStats();
     },
 
     goHome() {
         API.currentStoreId = null;
-        document.getElementById('aislePanelOverlay').classList.remove('show');
-        document.getElementById('shoppingModeOverlay').classList.add('hidden');
         document.getElementById('storeScreen').classList.add('hidden');
         document.getElementById('homeScreen').classList.remove('hidden');
-        // Switch nav back
-        document.getElementById('navStoreScreen').classList.add('hidden');
-        document.getElementById('navHomeScreen').classList.remove('hidden');
-        // Reset accent and home button to default
-        document.documentElement.style.setProperty('--accent', '#2563EB');
-        document.documentElement.style.setProperty('--accent-dim', '#2563EB20');
-        document.documentElement.style.setProperty('--home-btn-color', '#0D9488');
-        document.documentElement.style.setProperty('--home-btn-shadow', '#0D948880');
-        UI.renderHome();
+        this.releaseWakeLock();
     },
 
     // ===== SHOPPING MODE =====
-    openShoppingMode() {
-        const store = API.stores.find(s => s.id === API.currentStoreId);
-        if (!store) return;
-        const logoDomain = UI.getStoreLogo(store.name);
-        const titleEl = document.getElementById('shoppingModeTitle');
-        if (logoDomain) {
-            titleEl.innerHTML = `
-                <img src="https://www.google.com/s2/favicons?domain=${logoDomain}&sz=128"
-                    alt="${store.name}"
-                    onerror="this.style.display='none'"
-                    style="width:26px;height:26px;object-fit:contain;border-radius:6px;background:white;padding:2px;vertical-align:middle;margin-right:8px;">
-                ${store.name}`;
-        } else {
-            titleEl.textContent = store.name;
-        }
-        document.getElementById('shoppingModeOverlay').classList.remove('hidden');
-        // Hide My List button — home button handles going back
-        document.getElementById('navBtnShop').classList.add('hidden');
-        // Keep screen awake while shopping
-        this.requestWakeLock();
+    enterShoppingMode() {
+        const overlay = document.getElementById('shoppingModeOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('hidden');
         this.renderShoppingModeList();
+        UI.closeAislePanel();
+        UI.lastAislePanel = null;
     },
 
     closeShoppingMode() {
-        document.getElementById('shoppingModeOverlay').classList.add('hidden');
-        // Restore My List button
-        document.getElementById('navBtnShop').classList.remove('hidden');
-        // Release wake lock
-        this.releaseWakeLock();
+        const overlay = document.getElementById('shoppingModeOverlay');
+        if (overlay) overlay.classList.add('hidden');
     },
 
     renderShoppingModeList() {
         const container = document.getElementById('shoppingModeList');
+        if (!container) return;
+
         const items = API.storeItems;
-        const stats = document.getElementById('shoppingModeStats');
-
-        const total = items.length;
-        const checked = items.filter(i => i.isChecked).length;
-        if (stats) stats.textContent = `${checked} of ${total} collected`;
-
         if (!items.length) {
-            container.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><p>Your list is empty!</p><p class="empty-sub">Add products from the aisles first.</p></div>`;
+            container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af;">
+                <div style="font-size:48px;margin-bottom:12px;">✅</div>
+                <p>Your list is empty!</p>
+            </div>`;
             return;
         }
 
-        // Group by aisle
-        const grouped = {};
-        const noAisle = [];
+        const grouped  = {};
+        const noAisle  = [];
         items.forEach(item => {
-            if (!item.aisleId) { noAisle.push(item); return; }
-            if (!grouped[item.aisleId]) grouped[item.aisleId] = [];
-            grouped[item.aisleId].push(item);
+            if (item.aisleId) {
+                if (!grouped[item.aisleId]) grouped[item.aisleId] = [];
+                grouped[item.aisleId].push(item);
+            } else {
+                noAisle.push(item);
+            }
         });
 
         const sortedAisles = API.storeAisles.filter(a => grouped[a.id]).sort((a, b) => a.sortOrder - b.sortOrder);
@@ -269,13 +378,11 @@ const App = {
         try {
             const result = await API.toggleCheck(id);
             if (result && result.isChecked) {
-                // Update local state immediately
                 const idx = API.items.findIndex(i => i.id === id);
                 if (idx !== -1) API.items[idx].isChecked = true;
                 this.renderShoppingModeList();
                 setTimeout(async () => {
                     try { await API.deleteItem(id); } catch(e) {}
-                    // Always remove and re-render
                     API.items = API.items.filter(i => i.id !== id);
                     this.renderShoppingModeList();
                 }, 700);
@@ -334,7 +441,6 @@ const App = {
 
         overlay.classList.add('show');
         setTimeout(() => document.getElementById('newStoreName').focus(), 100);
-        // Pre-select first colour
         App.selectStoreColour('#005EA5');
     },
 
@@ -403,6 +509,23 @@ const App = {
             Utils.closeModal();
             Utils.showToast('Cleared! ✓');
         } catch(e) { Utils.showToast('Failed to clear', true); }
+    },
+
+    // ===== HOUSEHOLD CODE — VIEW =====
+    showMyCode() {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:40px;margin-bottom:10px;">🏠</div>
+                <h3 style="margin:0 0 6px;">Your Household Code</h3>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 18px;">Share this with family to join your list.</p>
+                <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:18px;margin-bottom:16px;">
+                    <div style="font-size:32px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${API.householdCode}</div>
+                </div>
+                <button class="modal-btn cancel" onclick="Utils.closeModal()">Close</button>
+            </div>`;
+        overlay.classList.add('show');
     },
 
     // ===== UTILITY =====
