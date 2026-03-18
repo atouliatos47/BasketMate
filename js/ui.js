@@ -371,7 +371,7 @@ const UI = {
                 await fetch(`/items/${existing.id}/quantity`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantity: existing.quantity + 1 })
+                    body: JSON.stringify({ quantity: existing.quantity + 1, householdId: API.householdId })
                 });
                 Utils.showToast(`${name} x${existing.quantity + 1} 🛒`);
             } else {
@@ -449,7 +449,7 @@ const UI = {
                 await fetch(`/items/${existing.id}/quantity`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantity: existing.quantity + 1 })
+                    body: JSON.stringify({ quantity: existing.quantity + 1, householdId: API.householdId })
                 });
                 Utils.showToast(`${name} x${existing.quantity + 1} 🛒`);
             } else {
