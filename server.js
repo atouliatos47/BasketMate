@@ -96,6 +96,11 @@ async function initDb() {
         )
     `);
 
+    // ===== MIGRATIONS — add columns to existing tables if upgrading =====
+    await pool.query(`ALTER TABLE aisles ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE favourites ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
+
     // Seed global stores if empty
     const { rows } = await pool.query('SELECT COUNT(*) FROM stores');
     if (parseInt(rows[0].count) === 0) {
