@@ -1,15 +1,50 @@
 {
-  "name": "BasketMate",
-  "short_name": "BasketMate",
-  "description": "Tesco aisle-sorted shopping list",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#005EA5",
-  "theme_color": "#005EA5",
-  "orientation": "portrait-primary",
-  "icons": [
-    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "img/icon-180.png", "sizes": "180x180", "type": "image/png" }
-  ]
+    "id": "https://trolleymate.onrender.com/",
+    "name": "BasketMate",
+    "short_name": "BasketMate",
+    "description": "Tesco aisle-sorted shopping list",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#005EA5",
+    "theme_color": "#005EA5",
+    "orientation": "portrait-primary",
+    "lang": "en-GB",
+    "categories": ["productivity", "utilities", "lifestyle"],
+    "icons": [
+        {
+            "src": "img/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "img/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "img/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "img/screenshot-1.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "BasketMate Shopping List"
+        },
+        {
+            "src": "img/screenshot-2.png",
+            "sizes": "720x1280",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Aisle Sorted View"
+        }
+    ]
 }
