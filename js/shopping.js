@@ -3,6 +3,19 @@
 // ===================================================
 Object.assign(App, {
 
+    async setShoppingStatus(active) {
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (!sub) return;
+            await fetch('/push/shopping-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ endpoint: sub.endpoint, active })
+            });
+        } catch(e) {}
+    },
+
     openShoppingMode() { this.enterShoppingMode(); },
 
     enterShoppingMode() {
@@ -17,11 +30,13 @@ Object.assign(App, {
         this.renderShoppingModeList();
         UI.closeAislePanel();
         UI.lastAislePanel = null;
+        this.setShoppingStatus(true);
     },
 
     closeShoppingMode() {
         const overlay = document.getElementById('shoppingModeOverlay');
         if (overlay) overlay.classList.add('hidden');
+        this.setShoppingStatus(false);
     },
 
     renderShoppingModeList() {
@@ -101,27 +116,10 @@ Object.assign(App, {
         </div>`;
     },
 
-    playPing() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.setValueAtTime(880, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.3);
-        } catch(e) {}
-    },
-
     async toggleShopItem(id) {
         try {
             const result = await API.toggleCheck(id);
             if (result && result.isChecked) {
-                this.playPing();
                 const idx = API.items.findIndex(i => i.id === id);
                 if (idx !== -1) API.items[idx].isChecked = true;
                 this.renderShoppingModeList();

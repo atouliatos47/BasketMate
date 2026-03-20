@@ -121,11 +121,14 @@ const API = {
             this.items.push(item);
             if (item.storeId === this.currentStoreId) UI.renderList();
             UI.renderHome();
-            // Show in-app alert if someone ELSE added the item
-            if (item.addedBy && item.addedBy !== this.memberName) {
+            // Only show in-app alert if shopping mode is currently open AND someone else added it
+            const shoppingMode = document.getElementById('shoppingModeOverlay');
+            const isShoppingModeOpen = shoppingMode && !shoppingMode.classList.contains('hidden');
+            if (isShoppingModeOpen && item.addedBy && item.addedBy !== this.memberName) {
                 const store = this.stores.find(s => s.id === item.storeId);
                 const storeName = store ? store.name : 'the list';
                 App.showItemAlert(item.addedBy, item.name, storeName);
+                App.renderShoppingModeList();
             }
         });
 
