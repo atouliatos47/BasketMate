@@ -146,6 +146,19 @@ Object.assign(App, {
                 const idx = API.items.findIndex(i => i.id === id);
                 if (idx !== -1) API.items[idx].isChecked = true;
                 this.renderShoppingModeList();
+                // Animate the item out
+                const el = document.querySelector(`.shop-item[onclick="App.toggleShopItem(${id})"]`);
+                if (el) {
+                    el.style.transition = 'all 0.5s cubic-bezier(0.4,0,0.2,1)';
+                    el.style.transform = 'translateX(100%)';
+                    el.style.opacity = '0';
+                    el.style.maxHeight = el.offsetHeight + 'px';
+                    setTimeout(() => {
+                        el.style.maxHeight = '0';
+                        el.style.padding = '0';
+                        el.style.margin = '0';
+                    }, 300);
+                }
                 setTimeout(async () => {
                     try { await API.deleteItem(id); } catch(e) {}
                     API.items = API.items.filter(i => i.id !== id);
