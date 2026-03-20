@@ -43,6 +43,8 @@ const App = {
         // Check if household already saved
         const hasHousehold = API.loadHousehold();
         if (hasHousehold) {
+            // Load member name
+            API.memberName = localStorage.getItem('bm_member_name') || 'Someone';
             // Returning user — dismiss splash then connect
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
@@ -163,11 +165,44 @@ const App = {
 
                 <p style="color:#9ca3af;font-size:12px;margin:0 0 20px;">You can find this code later in the app settings.</p>
 
-                <button onclick="App.startApp()"
+                <button onclick="App.showNameSetup()"
+                    style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">
+                    Next →
+                </button>
+            </div>`;
+    },
+
+    showNameSetup() {
+        const modal = document.getElementById('modal');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:48px;margin-bottom:12px;">👤</div>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">What's your name?</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">So your family knows who added items to the list.</p>
+                <input type="text" id="memberNameInput"
+                    placeholder="e.g. Andreas, Sharon..."
+                    maxlength="20"
+                    style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;margin-bottom:16px;box-sizing:border-box;">
+                <p id="nameError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;">Please enter your name.</p>
+                <button onclick="App.saveMemberName()"
                     style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">
                     Let's Go! 🛒
                 </button>
             </div>`;
+        setTimeout(() => document.getElementById('memberNameInput')?.focus(), 100);
+    },
+
+    saveMemberName() {
+        const input = document.getElementById('memberNameInput');
+        const name = input.value.trim();
+        if (!name) {
+            document.getElementById('nameError').style.display = 'block';
+            input.style.borderColor = '#dc2626';
+            return;
+        }
+        localStorage.setItem('bm_member_name', name);
+        API.memberName = name;
+        this.startApp();
     },
 
     async joinHousehold() {
@@ -187,7 +222,7 @@ const App = {
             error.style.display = 'none';
             await API.joinHousehold(code);
             Utils.showToast('Joined household! 🏠');
-            this.startApp();
+            this.showNameSetup();
         } catch(e) {
             input.disabled = false;
             input.style.borderColor = '#dc2626';
@@ -561,6 +596,25 @@ const App = {
             Utils.closeModal();
             Utils.showToast('Cleared! ✓');
         } catch(e) { Utils.showToast('Failed to clear', true); }
+    },
+
+    // ===== IN-APP ITEM ALERT =====
+    showItemAlert(addedBy, itemName, storeName) {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:48px;margin-bottom:12px;">🛒</div>
+                <h3 style="margin:0 0 8px;font-size:20px;color:#1a1a2e;">${Utils.escapeHtml(addedBy)} added something!</h3>
+                <p style="color:#6b7280;font-size:16px;margin:0 0 20px;">
+                    <strong style="color:#005EA5;">${Utils.escapeHtml(itemName)}</strong> was added to <strong>${Utils.escapeHtml(storeName)}</strong>
+                </p>
+                <button onclick="Utils.closeModal()"
+                    style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">
+                    OK
+                </button>
+            </div>`;
+        overlay.classList.add('show');
     },
 
     // ===== HOUSEHOLD CODE — VIEW =====

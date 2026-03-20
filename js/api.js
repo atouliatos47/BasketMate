@@ -6,6 +6,7 @@ const API = {
     currentStoreId: null,
     householdId: null,
     householdCode: null,
+    memberName: 'Someone',
     eventSource: null,
 
     get storeAisles() {
@@ -120,6 +121,12 @@ const API = {
             this.items.push(item);
             if (item.storeId === this.currentStoreId) UI.renderList();
             UI.renderHome();
+            // Show in-app alert if someone ELSE added the item
+            if (item.addedBy && item.addedBy !== this.memberName) {
+                const store = this.stores.find(s => s.id === item.storeId);
+                const storeName = store ? store.name : 'the list';
+                App.showItemAlert(item.addedBy, item.name, storeName);
+            }
         });
 
         this.eventSource.addEventListener('updateItem', (e) => {
@@ -263,7 +270,7 @@ const API = {
         const r = await fetch('/items', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...data, storeId: this.currentStoreId, householdId: this.householdId })
+            body: JSON.stringify({ ...data, storeId: this.currentStoreId, householdId: this.householdId, addedBy: this.memberName })
         });
         if (!r.ok) throw new Error('Failed to add item');
         return await r.json();

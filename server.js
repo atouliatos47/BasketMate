@@ -118,6 +118,7 @@ async function initDb() {
     // ===== MIGRATIONS — add columns to existing tables if upgrading =====
     await pool.query(`ALTER TABLE aisles ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
     await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS added_by TEXT`);
     await pool.query(`ALTER TABLE favourites ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
     await pool.query(`ALTER TABLE favourites ALTER COLUMN aisle_id DROP NOT NULL`);
 
@@ -181,7 +182,8 @@ function mapItem(row) {
     return {
         id: row.id, householdId: row.household_id, storeId: row.store_id, name: row.name,
         aisleId: row.aisle_id, quantity: row.quantity,
-        isFavourite: row.is_favourite, isChecked: row.is_checked, addedAt: row.added_at
+        isFavourite: row.is_favourite, isChecked: row.is_checked, addedAt: row.added_at,
+        addedBy: row.added_by || null
     };
 }
 
@@ -456,10 +458,11 @@ const server = http.createServer(async (req, res) => {
             const b = await getBody(req);
             const householdId = parseInt(b.householdId);
             if (!householdId) { res.writeHead(400); return res.end(JSON.stringify({ error: 'householdId required' })); }
+            const addedBy = b.addedBy || 'Someone';
             const r = await pool.query(
-                `INSERT INTO items (household_id, store_id, name, aisle_id, quantity, is_favourite)
-                 VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-                [householdId, b.storeId, b.name, b.aisleId || null, b.quantity || 1, b.isFavourite || false]
+                `INSERT INTO items (household_id, store_id, name, aisle_id, quantity, is_favourite, added_by)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+                [householdId, b.storeId, b.name, b.aisleId || null, b.quantity || 1, b.isFavourite || false, addedBy]
             );
             const item = mapItem(r.rows[0]);
             broadcast(householdId, 'newItem', item);
@@ -472,14 +475,13 @@ const server = http.createServer(async (req, res) => {
                 [householdId, b.senderEndpoint || '']
             );
             const payload = JSON.stringify({
-                title: `${b.name} added to ${storeName}`,
-                body: `Someone added ${b.name} to the shopping list`,
+                title: `${addedBy} added to ${storeName} 🛒`,
+                body: `${addedBy} added ${b.name} to the shopping list`,
                 icon: '/img/icon-192.png'
             });
             subs.rows.forEach(row => {
                 webpush.sendNotification(row.subscription, payload).catch(err => {
                     if (err.statusCode === 410) {
-                        // Subscription expired — remove it
                         pool.query('DELETE FROM push_subscriptions WHERE endpoint=$1', [row.subscription.endpoint]).catch(() => {});
                     }
                 });
