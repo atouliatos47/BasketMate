@@ -171,12 +171,18 @@ const API = {
             if (badge) { badge.textContent = '○ Offline'; badge.style.color = 'rgba(255,255,255,0.5)'; }
             this.eventSource.close();
             this.eventSource = null;
-            setTimeout(() => this.connectSSE(), 3000);
+            // Exponential backoff — max 30 seconds
+            const delay = Math.min(3000 * (this._reconnectCount || 1), 30000);
+            this._reconnectCount = (this._reconnectCount || 1) + 1;
+            this._reconnectTimer = setTimeout(() => this.connectSSE(), delay);
         };
 
         this.eventSource.onopen = () => {
             const badge = document.getElementById('connectionBadge');
             if (badge) { badge.textContent = '● Live'; badge.style.color = ''; }
+            // Reset reconnect counter on successful connection
+            this._reconnectCount = 1;
+            clearTimeout(this._reconnectTimer);
         };
     },
 

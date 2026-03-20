@@ -139,31 +139,41 @@ Object.assign(App, {
     },
 
     async toggleShopItem(id) {
+        // Debounce — prevent double taps
+        if (this._tappedItems && this._tappedItems.has(id)) return;
+        if (!this._tappedItems) this._tappedItems = new Set();
+        this._tappedItems.add(id);
+        setTimeout(() => this._tappedItems.delete(id), 1500);
+
         try {
             const result = await API.toggleCheck(id);
             if (result && result.isChecked) {
                 this.playPing();
-                const idx = API.items.findIndex(i => i.id === id);
-                if (idx !== -1) API.items[idx].isChecked = true;
-                this.renderShoppingModeList();
-                // Animate the item out
+                // Animate the item out FIRST before re-rendering
                 const el = document.querySelector(`.shop-item[onclick="App.toggleShopItem(${id})"]`);
                 if (el) {
-                    el.style.transition = 'all 0.5s cubic-bezier(0.4,0,0.2,1)';
-                    el.style.transform = 'translateX(100%)';
+                    el.style.transition = 'all 0.4s cubic-bezier(0.4,0,0.2,1)';
+                    el.style.transform = 'translateX(110%)';
                     el.style.opacity = '0';
-                    el.style.maxHeight = el.offsetHeight + 'px';
+                    el.style.overflow = 'hidden';
+                    const h = el.offsetHeight;
                     setTimeout(() => {
-                        el.style.maxHeight = '0';
-                        el.style.padding = '0';
-                        el.style.margin = '0';
-                    }, 300);
+                        el.style.maxHeight = h + 'px';
+                        requestAnimationFrame(() => {
+                            el.style.maxHeight = '0';
+                            el.style.padding = '0';
+                            el.style.marginBottom = '0';
+                        });
+                    }, 350);
                 }
+                // Update state and delete after animation completes
                 setTimeout(async () => {
+                    const idx = API.items.findIndex(i => i.id === id);
+                    if (idx !== -1) API.items[idx].isChecked = true;
                     try { await API.deleteItem(id); } catch(e) {}
                     API.items = API.items.filter(i => i.id !== id);
                     this.renderShoppingModeList();
-                }, 700);
+                }, 750);
             } else {
                 this.renderShoppingModeList();
             }

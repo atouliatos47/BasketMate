@@ -12,11 +12,15 @@ const App = {
             if ('wakeLock' in navigator) {
                 this.wakeLock = await navigator.wakeLock.request('screen');
                 console.log('Screen wake lock active');
-                document.addEventListener('visibilitychange', async () => {
-                    if (document.visibilityState === 'visible' && this.wakeLock === null) {
-                        await this.requestWakeLock();
-                    }
-                });
+                // Only add the listener once
+                if (!this._wakeLockListenerAdded) {
+                    this._wakeLockListenerAdded = true;
+                    document.addEventListener('visibilitychange', async () => {
+                        if (document.visibilityState === 'visible' && this.wakeLock === null) {
+                            await this.requestWakeLock();
+                        }
+                    });
+                }
             }
         } catch(e) { console.log('Wake lock not available:', e); }
     },
