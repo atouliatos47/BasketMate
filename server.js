@@ -116,7 +116,10 @@ async function initDb() {
     `);
 
     // ===== MIGRATIONS — add columns to existing tables if upgrading =====
-    await pool.query(`ALTER TABLE aisles ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS shopping_active BOOLEAN NOT NULL DEFAULT false`);
+    await pool.query(`ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS sender_endpoint TEXT`);
+    // Reset all shopping status on restart — prevents stale active states
+    await pool.query(`UPDATE push_subscriptions SET shopping_active=false`);
     await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
     await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS added_by TEXT`);
     await pool.query(`ALTER TABLE favourites ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
@@ -341,6 +344,20 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // ===== PUSH — SHOPPING STATUS =====
+    if (p.pathname === '/push/shopping-status' && req.method === 'POST') {
+        try {
+            const b = await getBody(req);
+            if (!b.endpoint) { res.writeHead(400); return res.end(JSON.stringify({ error: 'endpoint required' })); }
+            await pool.query(
+                'UPDATE push_subscriptions SET shopping_active=$1 WHERE endpoint=$2',
+                [b.active === true, b.endpoint]
+            );
+            res.end(JSON.stringify({ success: true }));
+        } catch (e) { res.writeHead(500); res.end(JSON.stringify({ error: 'Failed to update status' })); }
+        return;
+    }
+
     // ===== ADD AISLE =====
     if (p.pathname === '/aisles' && req.method === 'POST') {
         try {
@@ -471,7 +488,7 @@ const server = http.createServer(async (req, res) => {
             const store = (await pool.query('SELECT name FROM stores WHERE id=$1', [b.storeId])).rows[0];
             const storeName = store ? store.name : 'your list';
             const subs = await pool.query(
-                'SELECT subscription FROM push_subscriptions WHERE household_id=$1 AND endpoint != $2',
+                'SELECT subscription FROM push_subscriptions WHERE household_id=$1 AND endpoint != $2 AND shopping_active=true',
                 [householdId, b.senderEndpoint || '']
             );
             const payload = JSON.stringify({
