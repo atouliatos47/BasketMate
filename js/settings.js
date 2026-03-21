@@ -67,6 +67,67 @@ Object.assign(App, {
         overlay.classList.add('show');
     },
 
+    // ===== SWITCH HOUSEHOLD =====
+    showSwitchHousehold() {
+        this.closeSettings();
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:40px;margin-bottom:10px;">🔄</div>
+                <h3 style="margin:0 0 6px;">Switch Household</h3>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 18px;">Enter a household code to switch to a different shared list. Your current list will remain untouched.</p>
+                <input type="text" id="switchCodeInput"
+                    placeholder="Enter household code"
+                    maxlength="6"
+                    style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;box-sizing:border-box;"
+                    oninput="this.value=this.value.toUpperCase()">
+                <p id="switchError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;"></p>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="Utils.closeModal()">Cancel</button>
+                    <button class="modal-btn confirm" onclick="App.confirmSwitchHousehold()">Switch</button>
+                </div>
+            </div>`;
+        overlay.classList.add('show');
+        setTimeout(() => document.getElementById('switchCodeInput')?.focus(), 100);
+    },
+
+    async confirmSwitchHousehold() {
+        const input = document.getElementById('switchCodeInput');
+        const error = document.getElementById('switchError');
+        const code = input.value.trim().toUpperCase();
+
+        if (code.length < 6) {
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Please enter a 6-character code.';
+            error.style.display = 'block';
+            return;
+        }
+
+        if (code === API.householdCode) {
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'That\'s your current household code!';
+            error.style.display = 'block';
+            return;
+        }
+
+        const btn = document.querySelector('#modal .modal-btn.confirm');
+        if (btn) { btn.disabled = true; btn.textContent = 'Switching...'; }
+
+        try {
+            await API.joinHousehold(code);
+            Utils.closeModal();
+            // Reconnect SSE with new household
+            API.connectSSE();
+            Utils.showToast('Switched household! 🏠');
+        } catch(e) {
+            if (btn) { btn.disabled = false; btn.textContent = 'Switch'; }
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Household not found. Check the code and try again.';
+            error.style.display = 'block';
+        }
+    },
+
     // ===== HELP GUIDE =====
     showHelp() {
         this.closeSettings();
@@ -128,7 +189,7 @@ Object.assign(App, {
                     <div class="help-icon">🔔</div>
                     <div>
                         <div class="help-title">Notifications</div>
-                        <div class="help-text">Notifications only arrive when you have <strong>My List</strong> open. This way you won't be disturbed while building your list at home — only the shopper in the supermarket gets alerted when a family member adds something.</div>
+                        <div class="help-text">When a family member adds something to the list, you'll get a notification — even if the app is closed.</div>
                     </div>
                 </div>
 
