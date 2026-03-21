@@ -196,10 +196,19 @@ const UI = {
         const aisle = API.storeAisles.find(a => a.id === aisleId);
         if (!aisle) return;
         this.currentAislePanel = aisleId;
-        this.lastAislePanel = aisleId; // Remember for after shopping mode
+        this.lastAislePanel = aisleId;
         document.getElementById('aislePanelTitle').textContent = aisle.name;
         this.renderAislePanelProducts(aisleId);
         document.getElementById('aislePanelOverlay').classList.add('show');
+        document.getElementById('navStoreScreen').classList.add('hidden');
+        document.getElementById('navAislePanel').classList.remove('hidden');
+    },
+
+    closeAislePanel() {
+        this.currentAislePanel = null;
+        document.getElementById('aislePanelOverlay').classList.remove('show');
+        document.getElementById('navAislePanel').classList.add('hidden');
+        document.getElementById('navStoreScreen').classList.remove('hidden');
     },
 
     renderAislePanelProducts(aisleId) {
@@ -233,18 +242,9 @@ const UI = {
         }).join('') : `<div class="empty-state"><div class="empty-icon">📦</div><p>No products yet</p><p class="empty-sub">Use the box below to add your first product.</p></div>`;
 
         container.innerHTML = `
-            ${chipsHtml}
-            <div class="panel-add-product">
-                <input type="text" id="panelAddInput" placeholder="Add a product..."
-                    style="flex:1;padding:12px 14px;border:1.5px solid var(--ink-100);border-radius:var(--r-md);font-size:15px;outline:none;font-family:var(--font);"
-                    onkeypress="if(event.key==='Enter') UI.addProductFromPanel(${aisleId})">
-                <button onclick="UI.addProductFromPanel(${aisleId})"
-                    style="padding:12px 18px;background:var(--accent);color:white;border:none;border-radius:var(--r-md);font-size:15px;font-weight:700;white-space:nowrap;">
-                    + Add
-                </button>
-            </div>`;
+            ${chipsHtml}`;
 
-        // Long press to remove item from list
+        // Long press
         container.querySelectorAll('.panel-chip[data-in-list="true"]').forEach(chip => {
             let pressTimer;
             chip.addEventListener('touchstart', () => {
@@ -267,12 +267,34 @@ const UI = {
         });
     },
 
+    showAddProductInput() {
+        const aisleId = this.currentAislePanel;
+        if (!aisleId) return;
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:36px;margin-bottom:10px;">➕</div>
+                <h3 style="margin:0 0 16px;">Add Product</h3>
+                <input type="text" id="addProductInput" placeholder="e.g. White Bread..."
+                    style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;outline:none;text-align:center;box-sizing:border-box;margin-bottom:16px;"
+                    onkeypress="if(event.key==='Enter') UI.addProductFromPanel(${aisleId})">
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="Utils.closeModal()">Cancel</button>
+                    <button class="modal-btn confirm" onclick="UI.addProductFromPanel(${aisleId})">Add</button>
+                </div>
+            </div>`;
+        overlay.classList.add('show');
+        setTimeout(() => document.getElementById('addProductInput')?.focus(), 100);
+    },
+
     async addProductFromPanel(aisleId) {
-        const input = document.getElementById('panelAddInput');
+        const input = document.getElementById('addProductInput') || document.getElementById('panelAddInput');
         if (!input) return;
         const name = input.value.trim();
         if (!name) { Utils.shakeElement(input); return; }
         input.value = '';
+        Utils.closeModal();
         try {
             await API.addProduct(aisleId, name);
             Utils.showToast(`${name} added ✓`);
