@@ -69,7 +69,6 @@ const App = {
             { name: 'Morrisons',    color: '#00AA4F', domain: 'morrisons.com' },
             { name: 'M&S',          color: '#000000', domain: 'marksandspencer.com' },
             { name: 'Aldi',         color: '#003082', domain: 'aldi.co.uk' },
-            { name: 'Co-op',        color: '#00B1A9', domain: 'coop.co.uk' },
         ];
         storesContainer.innerHTML = stores.map((store, i) => {
             const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
@@ -161,7 +160,25 @@ const App = {
         if (!name) { document.getElementById('nameError').style.display = 'block'; input.style.borderColor = '#dc2626'; return; }
         localStorage.setItem('bm_member_name', name);
         API.memberName = name;
-        this.startApp();
+        this.showWelcomeSplash(name);
+    },
+
+    showWelcomeSplash(name) {
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('modal');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:24px 0 20px;">
+                <div style="font-size:64px;margin-bottom:16px;animation:bounceIn 0.6s ease;">🛒</div>
+                <h2 style="margin:0 0 8px;font-size:26px;color:#005EA5;font-weight:900;">Welcome, ${Utils.escapeHtml(name)}!</h2>
+                <p style="color:#6b7280;font-size:15px;margin:0 0 8px;">Your smart shopping companion is ready.</p>
+                <p style="color:#9ca3af;font-size:13px;margin:0;">Taking you to your list...</p>
+            </div>`;
+        overlay.classList.add('show');
+        overlay.onclick = null;
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            this.startApp();
+        }, 4200);
     },
 
     async joinHousehold() {
