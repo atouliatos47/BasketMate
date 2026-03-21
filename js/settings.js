@@ -9,6 +9,13 @@ Object.assign(App, {
         const overlay = document.getElementById('settingsOverlay');
         const nameSub = document.getElementById('currentNameSub');
         if (nameSub) nameSub.textContent = `Signed in as ${API.memberName}`;
+        const isSilent = localStorage.getItem('bm_silent') === 'true';
+        const toggle = document.getElementById('silentModeToggle');
+        const thumb = document.getElementById('silentModeThumb');
+        const sub = document.getElementById('silentModeSub');
+        if (toggle) toggle.style.background = isSilent ? '#005EA5' : '#e5e7eb';
+        if (thumb) thumb.style.left = isSilent ? '22px' : '2px';
+        if (sub) sub.textContent = isSilent ? 'Sounds are muted' : 'Mute item ping sounds';
         panel.classList.add('open');
         overlay.classList.add('open');
     },
@@ -128,6 +135,18 @@ Object.assign(App, {
         }
     },
 
+    toggleSilentMode() {
+        const isSilent = localStorage.getItem('bm_silent') === 'true';
+        localStorage.setItem('bm_silent', String(!isSilent));
+        const toggle = document.getElementById('silentModeToggle');
+        const thumb = document.getElementById('silentModeThumb');
+        const sub = document.getElementById('silentModeSub');
+        if (toggle) toggle.style.background = !isSilent ? '#005EA5' : '#e5e7eb';
+        if (thumb) thumb.style.left = !isSilent ? '22px' : '2px';
+        if (sub) sub.textContent = !isSilent ? 'Sounds are muted' : 'Mute item ping sounds';
+        Utils.showToast(!isSilent ? '🔇 Silent mode on' : '🔔 Silent mode off');
+    },
+
     // ===== HELP GUIDE =====
     showHelp() {
         this.closeSettings();
@@ -182,6 +201,14 @@ Object.assign(App, {
                     <div>
                         <div class="help-title">Favourites</div>
                         <div class="help-text">Tap the star ⭐ on any product to save it as a favourite. Access all your favourites from the Favourites tab for one-tap adding.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">🔗</div>
+                    <div>
+                        <div class="help-title">Join a Household</div>
+                        <div class="help-text">If someone you live with already has BasketMate, go to Settings → Join a Household and enter their 6-letter code. You will instantly share the same list in real time.</div>
                     </div>
                 </div>
 

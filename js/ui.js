@@ -498,6 +498,11 @@ const UI = {
         } catch(e) { Utils.showToast('Failed to add item', true); }
     },
 
+    closeAislePanel() {
+        document.getElementById('aislePanelOverlay').classList.remove('show');
+        this.currentAislePanel = null;
+    },
+
     // ===== ADD / DELETE AISLE =====
     showAddAisle() {
         const modal = document.getElementById('modal');
@@ -729,6 +734,8 @@ const UI = {
                         <button class="del-btn" onclick="UI.deleteProduct(${aisleId}, '${n.replace(/'/g, "\\'")}')">🗑</button>
                     </div>`).join('');
             }
+            // Re-render aisle panel if open
+            if (this.currentAislePanel === aisleId) this.renderAislePanelProducts(aisleId);
         } catch(e) { Utils.showToast('Failed to delete product', true); }
     }
 };

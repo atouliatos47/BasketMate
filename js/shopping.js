@@ -22,6 +22,9 @@ Object.assign(App, {
         const overlay = document.getElementById('shoppingModeOverlay');
         if (!overlay) return;
         overlay.classList.remove('hidden');
+        document.getElementById('navAislePanel').classList.add('hidden');
+        document.getElementById('navStoreScreen').classList.add('hidden');
+        document.getElementById('navShoppingMode').classList.remove('hidden');
         const title = document.getElementById('shoppingModeTitle');
         const stats = document.getElementById('shoppingModeStats');
         if (title) title.textContent = 'All Shopping Lists';
@@ -36,6 +39,13 @@ Object.assign(App, {
     closeShoppingMode() {
         const overlay = document.getElementById('shoppingModeOverlay');
         if (overlay) overlay.classList.add('hidden');
+        // Restore the correct nav
+        document.getElementById('navShoppingMode').classList.add('hidden');
+        if (UI.currentAislePanel) {
+            document.getElementById('navAislePanel').classList.remove('hidden');
+        } else if (API.currentStoreId) {
+            document.getElementById('navStoreScreen').classList.remove('hidden');
+        }
         this.setShoppingStatus(false);
     },
 
@@ -44,6 +54,9 @@ Object.assign(App, {
         if (!container) return;
 
         const allItems = API.items.filter(i => !i.isChecked);
+        // Update stats count live
+        const stats = document.getElementById('shoppingModeStats');
+        if (stats) stats.textContent = `${allItems.length} item${allItems.length !== 1 ? 's' : ''}`;
         if (!allItems.length) {
             container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af;">
                 <div style="font-size:48px;margin-bottom:12px;">✅</div>
@@ -117,6 +130,7 @@ Object.assign(App, {
     },
 
     playPing() {
+        if (localStorage.getItem('bm_silent') === 'true') return;
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;

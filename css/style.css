@@ -1638,7 +1638,7 @@ body {
     border-radius: var(--r-md);
     transition: background 0.15s;
     position: absolute;
-    right: calc(50% + 44px);
+    left: calc(50% + 44px);
     cursor: pointer;
 }
 .nav-btn-add-product:active { background: var(--ink-100); }

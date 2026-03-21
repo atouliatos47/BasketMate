@@ -102,6 +102,41 @@
                 <span class="settings-item-arrow">›</span>
             </div>
 
+            <div class="settings-item" onclick="App.showSwitchHousehold()">
+                <div class="settings-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Join a Household</div>
+                    <div class="settings-item-sub">Enter a partner's code to share their list</div>
+                </div>
+                <span class="settings-item-arrow">›</span>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <div class="settings-item" onclick="App.toggleSilentMode()">
+                <div class="settings-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                        <line x1="23" y1="9" x2="17" y2="15"/>
+                        <line x1="17" y1="9" x2="23" y2="15"/>
+                    </svg>
+                </div>
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Silent Mode</div>
+                    <div class="settings-item-sub" id="silentModeSub">Mute item ping sounds</div>
+                </div>
+                <div id="silentModeToggle" style="width:44px;height:24px;border-radius:12px;background:#e5e7eb;position:relative;transition:background 0.2s;flex-shrink:0;">
+                    <div id="silentModeThumb" style="width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;left:2px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>
+                </div>
+            </div>
+
             <div class="settings-divider"></div>
 
             <div class="settings-item" onclick="App.showHelp()">
@@ -133,7 +168,7 @@
         <div class="store-header">
             <span class="store-title" id="storeTitle"></span>
             <span class="stats-bar" id="statsBar"></span>
-            <button class="clear-btn-sm" onclick="App.clearChecked()">🗑 Clear</button>
+
         </div>
 
         <div class="main-layout">
@@ -218,17 +253,30 @@
                 </svg>
             </button>
         </div>
+        <!-- SHOPPING MODE NAV -->
+        <div class="nav-store-screen hidden" id="navShoppingMode">
+            <button class="nav-btn-back" onclick="App.closeShoppingMode()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg>
+            </button>
+        </div>
         <!-- AISLE PANEL NAV -->
         <div class="nav-aisle-panel hidden" id="navAislePanel">
-            <button class="nav-btn-add-product" id="navBtnAddProduct" onclick="UI.showAddProductInput()">
-                <div class="nav-icon-wrap">➕</div>
-                <span class="nav-label">Add Product</span>
+            <button class="nav-btn-shop" onclick="App.openShoppingMode()">
+                <div class="nav-icon-wrap">🛒</div>
+                <span class="nav-label">My List</span>
             </button>
             <button class="nav-btn-back" onclick="App.smartHome()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 12H5M12 5l-7 7 7 7" />
                 </svg>
+            </button>
+            <button class="nav-btn-add-product" id="navBtnAddProduct" onclick="UI.showAddProductInput()">
+                <div class="nav-icon-wrap">➕</div>
+                <span class="nav-label">Add Product</span>
             </button>
         </div>
     </div>
@@ -239,6 +287,7 @@
             <div class="shopping-mode-header-top">
                 <span class="shopping-mode-label">🛒 Shopping List</span>
                 <span class="shopping-mode-stats" id="shoppingModeStats"></span>
+
             </div>
             <span class="shopping-mode-title" id="shoppingModeTitle"></span>
         </div>
