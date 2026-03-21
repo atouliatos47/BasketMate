@@ -119,7 +119,10 @@ const API = {
         this.eventSource.addEventListener('newItem', (e) => {
             const item = JSON.parse(e.data);
             this.items.push(item);
-            if (item.storeId === this.currentStoreId) UI.renderList();
+            if (item.storeId === this.currentStoreId) {
+                UI.renderList();
+                if (UI.currentAislePanel) UI.renderAislePanelProducts(UI.currentAislePanel);
+            }
             UI.renderHome();
             // Only show in-app alert if shopping mode is currently open AND someone else added it
             const shoppingMode = document.getElementById('shoppingModeOverlay');
