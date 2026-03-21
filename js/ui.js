@@ -185,7 +185,6 @@ const UI = {
                         <span class="aisle-card-count">${products.length ? products.length + ' products' : 'No products'}</span>
                         ${inListCount ? `<span class="aisle-in-list-count">✓ ${inListCount} in list</span>` : ''}
                     </div>
-                    <button class="aisle-manage-btn" onclick="event.stopPropagation(); UI.showManageProducts(${aisle.id})">⚙️</button>
                     <button class="aisle-delete-btn" onclick="event.stopPropagation(); UI.confirmDeleteAisle(${aisle.id})">🗑</button>
                     <span class="aisle-card-arrow">›</span>
                 </div>
@@ -208,13 +207,9 @@ const UI = {
         const container = document.getElementById('aislePanelProducts');
         if (!aisle || !container) return;
         const products = aisle.products || [];
-        const itemNames = API.storeItems.map(i => i.name.toLowerCase());
-        if (!products.length) {
-            container.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>No products yet!</p><p class="empty-sub">Close and tap ⚙️ to add products.</p></div>`;
-            return;
-        }
         const favNames = API.storeFavourites.map(f => f.name.toLowerCase());
-        container.innerHTML = products.map(name => {
+
+        const chipsHtml = products.length ? products.map(name => {
             const listItem = API.storeItems.find(i => i.name.toLowerCase() === name.toLowerCase() && !i.isChecked);
             const inList = !!listItem;
             const qty = listItem ? listItem.quantity : 0;
@@ -223,33 +218,33 @@ const UI = {
             return `
                 <div class="panel-chip-wrapper">
                     <button class="chip-fav-btn ${isFav ? 'active' : ''}"
-                        onclick="UI.toggleFavourite('${name.replace(/'/g, "\'")}', ${aisleId}, this)">⭐</button>
+                        onclick="UI.toggleFavourite('${name.replace(/'/g, "\\'")}', ${aisleId}, this)">⭐</button>
                     <div class="panel-chip ${inList ? 'in-list' : ''}"
-                        onclick="UI.handlePanelProductTap('${name.replace(/'/g, "\'")}', ${aisleId}, this)"
+                        onclick="UI.handlePanelProductTap('${name.replace(/'/g, "\\'")}', ${aisleId}, this)"
                         data-item-id="${itemId}"
                         data-aisle-id="${aisleId}"
-                        data-name="${name.replace(/'/g, "\'")}"
+                        data-name="${name.replace(/"/g, '&quot;')}"
                         data-in-list="${inList}">
                         <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
                         <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
                     </div>
-
+                    <button class="chip-delete-btn" onclick="UI.deleteProduct(${aisleId}, '${name.replace(/'/g, "\\'")}')">🗑</button>
                 </div>`;
-            return `
-                <div class="panel-chip ${inList ? 'in-list' : ''}"
-                    onclick="UI.handlePanelProductTap('${name.replace(/'/g, "\'")}', ${aisleId}, this)"
-                    data-item-id="${itemId}"
-                    data-aisle-id="${aisleId}"
-                    data-name="${name.replace(/'/g, "\'")}"
-                    data-in-list="${inList}">
-                    <button class="chip-fav-btn ${isFav ? 'active' : ''}"
-                        onclick="event.stopPropagation(); UI.toggleFavourite('${name.replace(/'/g, "\'")}', ${aisleId}, this)">⭐</button>
-                    <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
-                    <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
-                </div>`;
-        }).join('');
+        }).join('') : `<div class="empty-state"><div class="empty-icon">📦</div><p>No products yet</p><p class="empty-sub">Use the box below to add your first product.</p></div>`;
 
-        // Long press to remove on touch devices
+        container.innerHTML = `
+            ${chipsHtml}
+            <div class="panel-add-product">
+                <input type="text" id="panelAddInput" placeholder="Add a product..."
+                    style="flex:1;padding:12px 14px;border:1.5px solid var(--ink-100);border-radius:var(--r-md);font-size:15px;outline:none;font-family:var(--font);"
+                    onkeypress="if(event.key==='Enter') UI.addProductFromPanel(${aisleId})">
+                <button onclick="UI.addProductFromPanel(${aisleId})"
+                    style="padding:12px 18px;background:var(--accent);color:white;border:none;border-radius:var(--r-md);font-size:15px;font-weight:700;white-space:nowrap;">
+                    + Add
+                </button>
+            </div>`;
+
+        // Long press to remove item from list
         container.querySelectorAll('.panel-chip[data-in-list="true"]').forEach(chip => {
             let pressTimer;
             chip.addEventListener('touchstart', () => {
@@ -262,7 +257,6 @@ const UI = {
             }, { passive: true });
             chip.addEventListener('touchend', () => clearTimeout(pressTimer), { passive: true });
             chip.addEventListener('touchmove', () => clearTimeout(pressTimer), { passive: true });
-            // Right-click on desktop
             chip.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 const id = parseInt(chip.dataset.itemId);
@@ -270,6 +264,20 @@ const UI = {
                 const aid = parseInt(chip.dataset.aisleId);
                 if (id) UI.handlePanelProductLongPress(id, nm, aid);
             });
+        });
+    },
+
+    async addProductFromPanel(aisleId) {
+        const input = document.getElementById('panelAddInput');
+        if (!input) return;
+        const name = input.value.trim();
+        if (!name) { Utils.shakeElement(input); return; }
+        input.value = '';
+        try {
+            await API.addProduct(aisleId, name);
+            Utils.showToast(`${name} added ✓`);
+        } catch(e) { Utils.showToast('Failed to add product', true); }
+    },
         });
     },
 

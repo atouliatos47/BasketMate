@@ -1585,3 +1585,34 @@ body {
     .modal { border-radius: var(--r-xl) var(--r-xl) 0 0; }
     .store-card-delete { opacity: 0.4; }
 }
+
+/* ===== PANEL ADD PRODUCT (bottom of aisle panel) ===== */
+.panel-add-product {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 0 4px;
+    margin-top: 8px;
+    border-top: 1.5px solid var(--ink-100);
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-page);
+}
+
+/* ===== CHIP DELETE BUTTON ===== */
+.chip-delete-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--ink-100);
+    border-radius: var(--r-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+}
+.chip-delete-btn:active { background: var(--red-bg); }
