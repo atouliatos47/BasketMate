@@ -278,8 +278,6 @@ const UI = {
             Utils.showToast(`${name} added ✓`);
         } catch(e) { Utils.showToast('Failed to add product', true); }
     },
-        });
-    },
 
     async lookupPrice(name, aisleId) {
         const store = API.stores.find(s => s.id === API.currentStoreId);
