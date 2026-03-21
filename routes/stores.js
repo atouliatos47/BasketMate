@@ -25,19 +25,28 @@ module.exports = function(pool, clients, mapStore, getBody, DEFAULT_AISLES) {
                 [b.name, b.color || '#005EA5', b.emoji || '🏪', sortOrder]
             );
             const store = mapStore(r.rows[0]);
-            // Seed aisles for this new store for all existing households
-            const households = await pool.query('SELECT id FROM households');
-            for (const h of households.rows) {
-                for (const aisle of DEFAULT_AISLES) {
-                    await pool.query(
-                        'INSERT INTO aisles (household_id, store_id, name, sort_order, products) VALUES ($1,$2,$3,$4,$5)',
-                        [h.id, store.id, aisle.name, aisle.sort_order, JSON.stringify(aisle.products)]
-                    );
-                }
-            }
+
+            // Respond immediately — don't wait for aisle seeding
             broadcastAll('newStore', store);
             res.writeHead(201);
             res.end(JSON.stringify(store));
+
+            // Seed aisles in background
+            setImmediate(async () => {
+                try {
+                    const households = await pool.query('SELECT id FROM households');
+                    for (const h of households.rows) {
+                        for (const aisle of DEFAULT_AISLES) {
+                            await pool.query(
+                                'INSERT INTO aisles (household_id, store_id, name, sort_order, products) VALUES ($1,$2,$3,$4,$5)',
+                                [h.id, store.id, aisle.name, aisle.sort_order, JSON.stringify(aisle.products)]
+                            );
+                        }
+                    }
+                    console.log(`Aisles seeded for store ${store.name}`);
+                } catch(e) { console.error('Background aisle seeding error:', e); }
+            });
+
         } catch (e) {
             console.error('Add store error:', e);
             res.writeHead(400);
