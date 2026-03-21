@@ -266,6 +266,7 @@ const App = {
     },
 
     showUpgradePrompt(reason) {
+        this.closeSettings();
         const daysLeft = API.trialDaysLeft;
         const trialExpired = !API.isTrialActive && !!API.trialStartedAt;
         const modal = document.getElementById('modal');
