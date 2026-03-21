@@ -42,7 +42,9 @@ Object.assign(App, {
         document.getElementById('storeScreen').classList.add('hidden');
         document.getElementById('homeScreen').classList.remove('hidden');
         document.getElementById('navStoreScreen').classList.add('hidden');
+        document.getElementById('navAislePanel').classList.add('hidden');
         document.getElementById('navHomeScreen').classList.remove('hidden');
+        document.getElementById('aislePanelOverlay').classList.remove('show');
         this.releaseWakeLock();
     },
 
