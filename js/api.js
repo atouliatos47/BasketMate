@@ -118,6 +118,8 @@ const API = {
 
         this.eventSource.addEventListener('newItem', (e) => {
             const item = JSON.parse(e.data);
+            // Remove any temp item with same name/store before adding the real one
+            this.items = this.items.filter(i => !(i.name.toLowerCase() === item.name.toLowerCase() && i.storeId === item.storeId && i.id > 1000000000000));
             this.items.push(item);
             if (item.storeId === this.currentStoreId) {
                 UI.renderList();

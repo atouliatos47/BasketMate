@@ -165,46 +165,6 @@ Object.assign(App, {
                 </div>
 
                 <div class="help-section">
-                    <div class="help-icon">🏪</div>
-                    <div>
-                        <div class="help-title">Choose Your Store</div>
-                        <div class="help-text">Tap any store on the home screen to start your list. Each store has its own aisles and shopping list.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">📋</div>
-                    <div>
-                        <div class="help-title">Adding Items</div>
-                        <div class="help-text">Tap an aisle to open it, then tap any product to add it to your list. You can also search and add custom items.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">↕️</div>
-                    <div>
-                        <div class="help-title">Reorder Aisles</div>
-                        <div class="help-text">Press and hold the drag handle (⠿) on any aisle row and drag it up or down to match the actual layout of your supermarket. Your order is saved automatically.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">⚙️</div>
-                    <div>
-                        <div class="help-title">Manage Aisle Products</div>
-                        <div class="help-text">Tap the gear icon on any aisle to add or remove products from that aisle's quick-pick list.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">⭐</div>
-                    <div>
-                        <div class="help-title">Favourites</div>
-                        <div class="help-text">Tap the star ⭐ on any product to save it as a favourite. Access all your favourites from the Favourites tab for one-tap adding.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
                     <div class="help-icon">🔗</div>
                     <div>
                         <div class="help-title">Join a Household</div>
@@ -213,18 +173,66 @@ Object.assign(App, {
                 </div>
 
                 <div class="help-section">
-                    <div class="help-icon">🔔</div>
+                    <div class="help-icon">🏪</div>
                     <div>
-                        <div class="help-title">Notifications</div>
-                        <div class="help-text">When a family member adds something to the list, you'll get a notification — even if the app is closed.</div>
+                        <div class="help-title">Choose Your Store</div>
+                        <div class="help-text">Tap any store on the home screen to open it. Each store has its own aisles and shopping list. Use the ➕ Add Store button at the bottom to add a new shop.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">📋</div>
+                    <div>
+                        <div class="help-title">Adding Items</div>
+                        <div class="help-text">Tap an aisle to open it. Tap a product to add it to your list — tap again to add more than one. Hold for 2 seconds on a product already in your list to remove it instantly. On desktop, right-click to remove.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">➕</div>
+                    <div>
+                        <div class="help-title">Add New Products to an Aisle</div>
+                        <div class="help-text">Open an aisle and tap Add Product at the bottom right. The new product will be saved to that aisle for future use. Tap the 🗑 icon next to any product to remove it from the aisle.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">↕️</div>
+                    <div>
+                        <div class="help-title">Reorder Aisles</div>
+                        <div class="help-text">Press and hold any aisle row and drag it up or down to match the layout of your supermarket. Your order is saved automatically.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">⭐</div>
+                    <div>
+                        <div class="help-title">Favourites</div>
+                        <div class="help-text">Tap the star ⭐ on any product to save it as a favourite. Access all your favourites from the Favourites tab inside a store for one-tap adding.</div>
                     </div>
                 </div>
 
                 <div class="help-section">
                     <div class="help-icon">🛒</div>
                     <div>
-                        <div class="help-title">Shopping Mode</div>
-                        <div class="help-text">Tap "My List" to enter shopping mode — a clean full-screen view sorted by aisle across all stores. Tap items to check them off as you go.</div>
+                        <div class="help-title">My List (Shopping Mode)</div>
+                        <div class="help-text">Tap My List at the bottom to see a clean full-screen view of everything across all stores, sorted by aisle. Tap items to check them off as you shop. Use the ← back button to return.</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">🔇</div>
+                    <div>
+                        <div class="help-title">Silent Mode</div>
+                        <div class="help-text">Go to Settings and toggle Silent Mode on to mute the ping sound when checking off items. Useful if you're shopping somewhere quiet!</div>
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <div class="help-icon">🔔</div>
+                    <div>
+                        <div class="help-title">Notifications</div>
+                        <div class="help-text">When a family member adds something to the list, you'll get a notification — even if the app is closed.</div>
                     </div>
                 </div>
 

@@ -597,6 +597,14 @@ body {
     transition: opacity 0.2s, background 0.2s;
 }
 
+.store-card-delete-visible {
+    opacity: 1 !important;
+    background: #fee2e2;
+    color: #dc2626;
+    width: 32px; height: 32px;
+}
+
+.store-card-delete-visible:hover { background: #fca5a5; }
 .store-card:hover .store-card-delete { opacity: 1; }
 .store-card-delete:active { background: var(--red-bg); color: var(--red); opacity: 1; }
 

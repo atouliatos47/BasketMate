@@ -69,6 +69,7 @@ const App = {
             { name: 'Morrisons',    color: '#00AA4F', domain: 'morrisons.com' },
             { name: 'M&S',          color: '#000000', domain: 'marksandspencer.com' },
             { name: 'Aldi',         color: '#003082', domain: 'aldi.co.uk' },
+            { name: 'Co-op',        color: '#00B1A9', domain: 'coop.co.uk' },
         ];
         storesContainer.innerHTML = stores.map((store, i) => {
             const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);

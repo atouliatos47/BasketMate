@@ -50,6 +50,15 @@ Object.assign(App, {
 
     // ===== ADD STORE =====
     showAddStore() {
+        // Store name → auto colour map
+        const storeColours = {
+            'co-op': '#00B1A9', 'coop': '#00B1A9',
+            'tesco': '#005EA5', 'iceland': '#D61F26',
+            'lidl': '#0050AA', "sainsbury's": '#F47920', 'sainsburys': '#F47920',
+            'b&m': '#6B2D8B', 'aldi': '#003082', 'morrisons': '#00AA4F',
+            'asda': '#78BE20', 'waitrose': '#7A9A01', 'm&s': '#000000',
+            'marks & spencer': '#000000',
+        };
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modalOverlay');
         const colours = [
@@ -60,6 +69,7 @@ Object.assign(App, {
             { name: 'B&M Purple',  hex: '#6B2D8B' },
             { name: 'Green',       hex: '#16a34a' },
             { name: 'Dark',        hex: '#1a1a2e' },
+            { name: 'Co-op Teal', hex: '#00B1A9' },
         ];
         modal.innerHTML = `
             <h3>🏪 Add New Store</h3>
@@ -68,7 +78,8 @@ Object.assign(App, {
                 <div>
                     <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;">Store Name</label>
                     <input type="text" id="newStoreName" placeholder="e.g. Aldi, Asda, Co-op..."
-                        style="width:100%;margin-top:6px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;outline:none;">
+                        style="width:100%;margin-top:6px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:16px;outline:none;"
+                        onkeyup="const c=App._storeColours&&App._storeColours[this.value.trim().toLowerCase()];if(c)App.selectStoreColour(c);">
                 </div>
                 <div>
                     <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;">Emoji</label>
