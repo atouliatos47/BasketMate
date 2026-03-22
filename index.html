@@ -139,6 +139,23 @@
 
             <div class="settings-divider"></div>
 
+            <div class="settings-item" onclick="App.showLanguageSelector()">
+                <div class="settings-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </div>
+                <div class="settings-item-text">
+                    <div class="settings-item-title">Language</div>
+                    <div class="settings-item-sub" id="currentLanguageSub">English 🇬🇧</div>
+                </div>
+                <span class="settings-item-arrow">›</span>
+            </div>
+
+            <div class="settings-divider"></div>
+
             <div class="settings-item" onclick="App.showHelp()">
                 <div class="settings-item-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -191,8 +208,8 @@
             <!-- LEFT: AISLES -->
             <div class="aisles-panel">
                 <div class="panel-header">
-                    <h2>🏪 Aisles</h2>
-                    <span class="panel-sub">Tap an aisle to add products</span>
+                    <h2 id="aislesHeader">🏪 Aisles</h2>
+                    <span class="panel-sub" id="aislesSubHeader">Tap an aisle to add products</span>
                 </div>
                 <div class="aisles-container" id="aislesContainer"></div>
             </div>
@@ -201,8 +218,8 @@
             <div class="list-panel">
                 <div class="panel-header">
                     <div class="list-tabs">
-                        <button class="list-tab active" id="tabList" onclick="UI.switchListTab('list')">📋 List</button>
-                        <button class="list-tab" id="tabFavs" onclick="UI.switchListTab('favs')">⭐ Favourites</button>
+                        <button class="list-tab active" id="tabList" onclick="UI.switchListTab('list')">📋 <span id="tabListLabel">List</span></button>
+                        <button class="list-tab" id="tabFavs" onclick="UI.switchListTab('favs')">⭐ <span id="tabFavsLabel">Favourites</span></button>
                     </div>
                 </div>
                 <div class="list-container" id="listContainer"></div>
@@ -242,7 +259,7 @@
                         <rect x="14" y="14" width="4" height="4" rx="1" />
                     </svg>
                 </div>
-                <span class="nav-label">My Code</span>
+                <span class="nav-label" id="navLabelMyCode">My Code</span>
             </button>
             <button class="nav-btn-home" onclick="App.smartHome()">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -252,14 +269,14 @@
             </button>
             <button class="nav-btn-add" onclick="App.showAddStore()">
                 <div class="nav-icon-wrap">➕</div>
-                <span class="nav-label">Add Store</span>
+                <span class="nav-label" id="navLabelAddStore">Add Store</span>
             </button>
         </div>
         <!-- STORE SCREEN NAV -->
         <div class="nav-store-screen hidden" id="navStoreScreen">
             <button class="nav-btn-shop" id="navBtnShop" onclick="App.openShoppingMode()">
                 <div class="nav-icon-wrap">🛒</div>
-                <span class="nav-label">My List</span>
+                <span class="nav-label" id="navLabelMyList2">My List</span>
             </button>
             <button class="nav-btn-back" onclick="App.smartHome()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -281,7 +298,7 @@
         <div class="nav-aisle-panel hidden" id="navAislePanel">
             <button class="nav-btn-shop" onclick="App.openShoppingMode()">
                 <div class="nav-icon-wrap">🛒</div>
-                <span class="nav-label">My List</span>
+                <span class="nav-label" id="navLabelMyList3">My List</span>
             </button>
             <button class="nav-btn-back" onclick="App.smartHome()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -291,7 +308,7 @@
             </button>
             <button class="nav-btn-add-product" id="navBtnAddProduct" onclick="UI.showAddProductInput()">
                 <div class="nav-icon-wrap">➕</div>
-                <span class="nav-label">Add Product</span>
+                <span class="nav-label" id="navLabelAddProduct">Add Product</span>
             </button>
         </div>
     </div>
@@ -300,7 +317,7 @@
     <div class="shopping-mode-overlay hidden" id="shoppingModeOverlay">
         <div class="shopping-mode-header">
             <div class="shopping-mode-header-top">
-                <span class="shopping-mode-label">🛒 Shopping List</span>
+                <span class="shopping-mode-label" id="shoppingModeLabel">🛒 Shopping List</span>
                 <span class="shopping-mode-stats" id="shoppingModeStats"></span>
 
             </div>
@@ -310,6 +327,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script src="/js/i18n.js"></script>
     <script src="/js/utils.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/ui.js"></script>

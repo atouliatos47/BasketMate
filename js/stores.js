@@ -33,12 +33,9 @@ Object.assign(App, {
         document.getElementById('navStoreScreen').classList.remove('hidden');
 
         this.requestWakeLock();
+        App.applyTranslations();
         UI.renderAisles();
         UI.renderList();
-        // Refresh aisles from server in case new store was just seeded
-        API.fetchAisles(storeId).then(() => {
-            UI.renderAisles();
-        }).catch(() => {});
     },
 
     goHome() {
@@ -131,10 +128,10 @@ Object.assign(App, {
         try {
             await API.addStore({ name, emoji, color });
             Utils.closeModal();
-            Utils.showToast(`${emoji} ${name} added! ✓`);
+            Utils.showToast(t('storeAdded', emoji, name));
         } catch(e) {
             Utils.closeModal();
-            Utils.showToast(`${emoji} ${name} added! ✓`);
+            Utils.showToast(t('storeAdded', emoji, name));
         }
     },
 
@@ -158,8 +155,8 @@ Object.assign(App, {
         try {
             await API.deleteStore(storeId);
             Utils.closeModal();
-            Utils.showToast('Store deleted');
-        } catch(e) { Utils.showToast('Failed to delete store', true); }
+            Utils.showToast(t('storeDeleted'));
+        } catch(e) { Utils.showToast(t('failedToRemove'), true); }
     },
 
     // ===== CLEAR CHECKED =====

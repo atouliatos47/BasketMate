@@ -102,8 +102,8 @@ const API = {
             this.items      = data.items;
             this.favourites = data.favourites || [];
             this.isPremium  = data.isPremium || false;
-            // Load trial start from localStorage (set when household was created)
-            this.trialStartedAt = localStorage.getItem('bm_trial_started');
+            // Use server-provided trial start (more secure than localStorage)
+            this.trialStartedAt = data.trialStartedAt || localStorage.getItem('bm_trial_started');
             console.log('Init:', this.stores.length, 'stores,', this.aisles.length, 'aisles,', this.items.length, 'items', '| Premium:', this.isPremium, '| Trial days left:', this.trialDaysLeft);
             // Apply free tier restrictions if trial expired
             if (!this.hasFullAccess) this.applyFreeTierRestrictions();

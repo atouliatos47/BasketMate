@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http    = require('http');
 const fs      = require('fs').promises;
 const path    = require('path');
@@ -79,6 +80,7 @@ async function initDb() {
     await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS added_by TEXT`);
     await pool.query(`ALTER TABLE favourites ADD COLUMN IF NOT EXISTS household_id INTEGER REFERENCES households(id) ON DELETE CASCADE`);
     await pool.query(`ALTER TABLE households ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT false`);
+    await pool.query(`ALTER TABLE households ADD COLUMN IF NOT EXISTS trial_started_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
     await pool.query(`ALTER TABLE households ADD COLUMN IF NOT EXISTS purchase_token TEXT`);
     await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS added_by TEXT`);
     await pool.query(`ALTER TABLE favourites ALTER COLUMN aisle_id DROP NOT NULL`);
@@ -160,7 +162,8 @@ const server = http.createServer(async (req, res) => {
                 pool.query('SELECT is_premium FROM households WHERE id=$1', [householdId])
             ]);
             const isPremium = hr.rows[0]?.is_premium || false;
-            res.write(`event: init\ndata: ${JSON.stringify({ stores: sr.rows.map(mapStore), aisles: ar.rows.map(mapAisle), items: ir.rows.map(mapItem), favourites: fr.rows, isPremium })}\n\n`);
+            const trialStartedAt = hr.rows[0]?.trial_started_at || null;
+            res.write(`event: init\ndata: ${JSON.stringify({ stores: sr.rows.map(mapStore), aisles: ar.rows.map(mapAisle), items: ir.rows.map(mapItem), favourites: fr.rows, isPremium, trialStartedAt })}\n\n`);
         } catch (e) { console.error('SSE init error:', e); }
         if (!clients.has(householdId)) clients.set(householdId, new Set());
         clients.get(householdId).add(res);
@@ -174,14 +177,25 @@ const server = http.createServer(async (req, res) => {
             const b = await getBody(req);
             const { householdId, purchaseToken } = b;
             if (!householdId || !purchaseToken) { res.writeHead(400); return res.end(JSON.stringify({ error: 'Missing fields' })); }
-            // For now: trust the token and upgrade (Google Play server verification can be added later)
+
+            // TODO: Add Google Play server-side verification here once service account is set up
+            // For now trust the token (add proper verification before production launch)
+            // Example verification would use googleapis npm package:
+            // const { google } = require('googleapis');
+            // const androidpublisher = google.androidpublisher('v3');
+            // await androidpublisher.purchases.products.get({ packageName, productId, token: purchaseToken });
+
+            // Mark household as premium
             await pool.query('UPDATE households SET is_premium=true, purchase_token=$1 WHERE id=$2', [purchaseToken, householdId]);
-            // Broadcast premium upgrade to all household clients
-            const msg = `event: premiumUpgraded\ndata: ${JSON.stringify({ householdId })}\n\n`;
+
+            // Broadcast premium upgrade to all connected clients in this household
+            const msg = `event: premiumUpgraded\ndata: ${JSON.stringify({ householdId: parseInt(householdId) })}\n\n`;
             clients.get(parseInt(householdId))?.forEach(r => r.write(msg));
+
             res.writeHead(200);
             return res.end(JSON.stringify({ success: true, isPremium: true }));
         } catch(e) {
+            console.error('Purchase verify error:', e);
             res.writeHead(500);
             return res.end(JSON.stringify({ error: 'Upgrade failed' }));
         }

@@ -33,9 +33,11 @@ Object.assign(App, {
         UI.lastAislePanel = null;
         const title = document.getElementById('shoppingModeTitle');
         const stats = document.getElementById('shoppingModeStats');
-        if (title) title.textContent = 'All Shopping Lists';
+        if (title) title.textContent = t('allShoppingLists');
+        const label = document.getElementById('shoppingModeLabel');
+        if (label) label.textContent = t('shoppingList');
         const totalItems = API.items.filter(i => !i.isChecked).length;
-        if (stats) stats.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+        if (stats) stats.textContent = t('items', totalItems);
         this.renderShoppingModeList();
         this.setShoppingStatus(true);
     },
@@ -109,7 +111,7 @@ Object.assign(App, {
 
             storeAisles.forEach(aisle => {
                 html += `<div class="shop-aisle-group">
-                    <div class="shop-aisle-header">${Utils.escapeHtml(aisle.name)}</div>
+                    <div class="shop-aisle-header">${Utils.escapeHtml(translateAisleName(aisle.name))}</div>
                     ${grouped[aisle.id].sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
                 </div>`;
             });

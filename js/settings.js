@@ -1,285 +1,202 @@
 // ===================================================
-// settings.js — Settings panel, name, help, code
+// shopping.js — Shopping mode, toggle items
 // ===================================================
 Object.assign(App, {
 
-    // ===== SETTINGS PANEL =====
-    showSettings() {
-        const panel = document.getElementById('settingsPanel');
-        const overlay = document.getElementById('settingsOverlay');
-        const nameSub = document.getElementById('currentNameSub');
-        if (nameSub) nameSub.textContent = `Signed in as ${API.memberName}`;
-        // Update upgrade button based on premium status
-        const upgradeTitle = document.getElementById('upgradeSettingsTitle');
-        const upgradeSub = document.getElementById('upgradeSettingsSub');
-        const upgradeItem = document.getElementById('upgradeSettingsItem');
-        if (upgradeTitle && upgradeSub) {
-            if (API.isPremium) {
-                upgradeTitle.textContent = '✅ BasketMate Family';
-                upgradeSub.textContent = 'You have full access — thank you!';
-                if (upgradeItem) upgradeItem.onclick = null;
-            } else if (API.isTrialActive) {
-                upgradeTitle.textContent = '⏳ Free Trial Active';
-                upgradeSub.textContent = `${API.trialDaysLeft} day${API.trialDaysLeft !== 1 ? 's' : ''} left — upgrade to keep full access`;
-            } else {
-                upgradeTitle.textContent = '⭐ Upgrade to Family';
-                upgradeSub.textContent = '£2.99 one-time — unlimited everything';
+    async setShoppingStatus(active) {
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            if (!sub) return;
+            await fetch('/push/shopping-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ endpoint: sub.endpoint, active })
+            });
+        } catch(e) {}
+    },
+
+    openShoppingMode() { this.enterShoppingMode(); },
+
+    enterShoppingMode() {
+        const overlay = document.getElementById('shoppingModeOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('hidden');
+        // Hide all nav sections first
+        document.getElementById('navAislePanel').classList.add('hidden');
+        document.getElementById('navStoreScreen').classList.add('hidden');
+        document.getElementById('navHomeScreen').classList.add('hidden');
+        document.getElementById('navShoppingMode').classList.remove('hidden');
+        // Close aisle panel overlay without touching nav (nav already set above)
+        document.getElementById('aislePanelOverlay').classList.remove('show');
+        UI.currentAislePanel = null;
+        UI.lastAislePanel = null;
+        const title = document.getElementById('shoppingModeTitle');
+        const stats = document.getElementById('shoppingModeStats');
+        if (title) title.textContent = t('allShoppingLists');
+        const label = document.getElementById('shoppingModeLabel');
+        if (label) label.textContent = t('shoppingList');
+        const totalItems = API.items.filter(i => !i.isChecked).length;
+        if (stats) stats.textContent = t('items', totalItems);
+        this.renderShoppingModeList();
+        this.setShoppingStatus(true);
+    },
+
+    closeShoppingMode() {
+        const overlay = document.getElementById('shoppingModeOverlay');
+        if (overlay) overlay.classList.add('hidden');
+        // Restore the correct nav
+        document.getElementById('navShoppingMode').classList.add('hidden');
+        if (UI.currentAislePanel) {
+            document.getElementById('navAislePanel').classList.remove('hidden');
+        } else if (API.currentStoreId) {
+            document.getElementById('navStoreScreen').classList.remove('hidden');
+        }
+        this.setShoppingStatus(false);
+    },
+
+    renderShoppingModeList() {
+        const container = document.getElementById('shoppingModeList');
+        if (!container) return;
+
+        const allItems = API.items.filter(i => !i.isChecked);
+        // Update stats count live
+        const stats = document.getElementById('shoppingModeStats');
+        if (stats) stats.textContent = `${allItems.length} item${allItems.length !== 1 ? 's' : ''}`;
+        if (!allItems.length) {
+            container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af;">
+                <div style="font-size:48px;margin-bottom:12px;">✅</div>
+                <p>All done! Your list is empty.</p>
+            </div>`;
+            return;
+        }
+
+        const storeGroups = {};
+        allItems.forEach(item => {
+            if (!storeGroups[item.storeId]) storeGroups[item.storeId] = [];
+            storeGroups[item.storeId].push(item);
+        });
+
+        let html = '';
+
+        API.stores.forEach(store => {
+            const storeItems = storeGroups[store.id];
+            if (!storeItems || !storeItems.length) return;
+
+            const logoDomain = UI.getStoreLogo(store.name);
+            html += `<div class="shop-store-header" style="background:${store.color};">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    ${logoDomain ? `<img src="https://www.google.com/s2/favicons?domain=${logoDomain}&sz=64"
+                        onerror="this.style.display='none'"
+                        style="width:24px;height:24px;border-radius:4px;background:white;padding:2px;object-fit:contain;">` : ''}
+                    <span style="font-size:16px;font-weight:700;color:white;">${Utils.escapeHtml(store.name)}</span>
+                    <span style="font-size:13px;color:rgba(255,255,255,0.75);margin-left:auto;">${storeItems.length} item${storeItems.length > 1 ? 's' : ''}</span>
+                </div>
+            </div>`;
+
+            const grouped = {};
+            const noAisle = [];
+            storeItems.forEach(item => {
+                if (item.aisleId) {
+                    if (!grouped[item.aisleId]) grouped[item.aisleId] = [];
+                    grouped[item.aisleId].push(item);
+                } else {
+                    noAisle.push(item);
+                }
+            });
+
+            const storeAisles = API.aisles
+                .filter(a => a.storeId === store.id && grouped[a.id])
+                .sort((a, b) => a.sortOrder - b.sortOrder);
+
+            storeAisles.forEach(aisle => {
+                html += `<div class="shop-aisle-group">
+                    <div class="shop-aisle-header">${Utils.escapeHtml(aisle.name)}</div>
+                    ${grouped[aisle.id].sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
+                </div>`;
+            });
+
+            if (noAisle.length) {
+                html += `<div class="shop-aisle-group">
+                    <div class="shop-aisle-header">Other</div>
+                    ${noAisle.sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
+                </div>`;
             }
-        }
-        const isSilent = localStorage.getItem('bm_silent') === 'true';
-        const toggle = document.getElementById('silentModeToggle');
-        const thumb = document.getElementById('silentModeThumb');
-        const sub = document.getElementById('silentModeSub');
-        if (toggle) toggle.style.background = isSilent ? '#005EA5' : '#e5e7eb';
-        if (thumb) thumb.style.left = isSilent ? '22px' : '2px';
-        if (sub) sub.textContent = isSilent ? 'Sounds are muted' : 'Mute item ping sounds';
-        panel.classList.add('open');
-        overlay.classList.add('open');
+        });
+
+        container.innerHTML = html;
     },
 
-    closeSettings() {
-        document.getElementById('settingsPanel').classList.remove('open');
-        document.getElementById('settingsOverlay').classList.remove('open');
+    renderShopItem(item) {
+        return `<div class="shop-item ${item.isChecked ? 'checked' : ''}" onclick="App.toggleShopItem(${item.id})">
+            <span class="shop-item-name ${item.isChecked ? 'crossed' : ''}">${Utils.escapeHtml(item.name)}</span>
+            ${item.quantity > 1 ? `<span class="shop-qty-badge">x${item.quantity}</span>` : ''}
+            ${item.isChecked ? '<span class="shop-done-badge">✓</span>' : ''}
+        </div>`;
     },
 
-    // ===== CHANGE NAME =====
-    showChangeName() {
-        this.closeSettings();
-        const modal = document.getElementById('modal');
-        const overlay = document.getElementById('modalOverlay');
-        modal.innerHTML = `
-            <div style="text-align:center;padding:8px 0 16px;">
-                <div style="font-size:40px;margin-bottom:10px;">👤</div>
-                <h3 style="margin:0 0 6px;">Change Your Name</h3>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 18px;">This is shown when you add items to the list.</p>
-                <input type="text" id="changeNameInput" value="${Utils.escapeHtml(API.memberName)}" maxlength="20"
-                    style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;margin-bottom:16px;box-sizing:border-box;">
-                <div class="modal-actions">
-                    <button class="modal-btn cancel" onclick="Utils.closeModal()">Cancel</button>
-                    <button class="modal-btn confirm" onclick="App.saveChangedName()">Save</button>
-                </div>
-            </div>`;
-        overlay.classList.add('show');
-        setTimeout(() => document.getElementById('changeNameInput')?.select(), 100);
+    playPing() {
+        if (localStorage.getItem('bm_silent') === 'true') return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const play = () => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.4, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            };
+            if (ctx.state === 'suspended') { ctx.resume().then(play); } else { play(); }
+        } catch(e) {}
     },
 
-    saveChangedName() {
-        const input = document.getElementById('changeNameInput');
-        const name = input?.value.trim();
-        if (!name) return;
-        localStorage.setItem('bm_member_name', name);
-        API.memberName = name;
-        Utils.closeModal();
-        Utils.showToast(`Name updated to ${name} ✓`);
-    },
-
-    // ===== HOUSEHOLD CODE =====
-    showMyCode() {
-        this.closeSettings();
-        if (!API.hasFullAccess) {
-            App.showUpgradePrompt('Household sharing is a BasketMate Family feature. Upgrade to share your list with family in real time.');
-            return;
-        }
-        const modal = document.getElementById('modal');
-        const overlay = document.getElementById('modalOverlay');
-        modal.innerHTML = `
-            <div style="text-align:center;padding:8px 0 16px;">
-                <div style="font-size:40px;margin-bottom:10px;">🏠</div>
-                <h3 style="margin:0 0 6px;">Your Household Code</h3>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 18px;">Share this with family to join your list.</p>
-                <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:18px;margin-bottom:16px;">
-                    <div style="font-size:32px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${API.householdCode}</div>
-                </div>
-                <button class="modal-btn cancel" onclick="Utils.closeModal()">Close</button>
-            </div>`;
-        overlay.classList.add('show');
-    },
-
-    // ===== SWITCH HOUSEHOLD =====
-    showSwitchHousehold() {
-        this.closeSettings();
-        if (!API.hasFullAccess) {
-            App.showUpgradePrompt('Household sharing is a BasketMate Family feature. Upgrade to join and share lists with your family.');
-            return;
-        }
-        const modal = document.getElementById('modal');
-        const overlay = document.getElementById('modalOverlay');
-        modal.innerHTML = `
-            <div style="text-align:center;padding:8px 0 16px;">
-                <div style="font-size:40px;margin-bottom:10px;">🔄</div>
-                <h3 style="margin:0 0 6px;">Switch Household</h3>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 18px;">Enter a household code to switch to a different shared list. Your current list will remain untouched.</p>
-                <input type="text" id="switchCodeInput"
-                    placeholder="Enter household code"
-                    maxlength="6"
-                    style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;box-sizing:border-box;"
-                    oninput="this.value=this.value.toUpperCase()">
-                <p id="switchError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;"></p>
-                <div class="modal-actions">
-                    <button class="modal-btn cancel" onclick="Utils.closeModal()">Cancel</button>
-                    <button class="modal-btn confirm" onclick="App.confirmSwitchHousehold()">Switch</button>
-                </div>
-            </div>`;
-        overlay.classList.add('show');
-        setTimeout(() => document.getElementById('switchCodeInput')?.focus(), 100);
-    },
-
-    async confirmSwitchHousehold() {
-        const input = document.getElementById('switchCodeInput');
-        const error = document.getElementById('switchError');
-        const code = input.value.trim().toUpperCase();
-
-        if (code.length < 6) {
-            input.style.borderColor = '#dc2626';
-            error.textContent = 'Please enter a 6-character code.';
-            error.style.display = 'block';
-            return;
-        }
-
-        if (code === API.householdCode) {
-            input.style.borderColor = '#dc2626';
-            error.textContent = 'That\'s your current household code!';
-            error.style.display = 'block';
-            return;
-        }
-
-        const btn = document.querySelector('#modal .modal-btn.confirm');
-        if (btn) { btn.disabled = true; btn.textContent = 'Switching...'; }
+    async toggleShopItem(id) {
+        // Debounce — prevent double taps
+        if (this._tappedItems && this._tappedItems.has(id)) return;
+        if (!this._tappedItems) this._tappedItems = new Set();
+        this._tappedItems.add(id);
+        setTimeout(() => this._tappedItems.delete(id), 1500);
 
         try {
-            await API.joinHousehold(code);
-            Utils.closeModal();
-            // Reconnect SSE with new household
-            API.connectSSE();
-            Utils.showToast('Switched household! 🏠');
-        } catch(e) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Switch'; }
-            input.style.borderColor = '#dc2626';
-            error.textContent = 'Household not found. Check the code and try again.';
-            error.style.display = 'block';
-        }
-    },
-
-    toggleSilentMode() {
-        // Update upgrade button based on premium status
-        const upgradeTitle = document.getElementById('upgradeSettingsTitle');
-        const upgradeSub = document.getElementById('upgradeSettingsSub');
-        const upgradeItem = document.getElementById('upgradeSettingsItem');
-        if (upgradeTitle && upgradeSub) {
-            if (API.isPremium) {
-                upgradeTitle.textContent = '✅ BasketMate Family';
-                upgradeSub.textContent = 'You have full access — thank you!';
-                if (upgradeItem) upgradeItem.onclick = null;
-            } else if (API.isTrialActive) {
-                upgradeTitle.textContent = '⏳ Free Trial Active';
-                upgradeSub.textContent = `${API.trialDaysLeft} day${API.trialDaysLeft !== 1 ? 's' : ''} left — upgrade to keep full access`;
+            const result = await API.toggleCheck(id);
+            if (result && result.isChecked) {
+                this.playPing();
+                // Animate the item out FIRST before re-rendering
+                const el = document.querySelector(`.shop-item[onclick="App.toggleShopItem(${id})"]`);
+                if (el) {
+                    el.style.transition = 'all 0.4s cubic-bezier(0.4,0,0.2,1)';
+                    el.style.transform = 'translateX(110%)';
+                    el.style.opacity = '0';
+                    el.style.overflow = 'hidden';
+                    const h = el.offsetHeight;
+                    setTimeout(() => {
+                        el.style.maxHeight = h + 'px';
+                        requestAnimationFrame(() => {
+                            el.style.maxHeight = '0';
+                            el.style.padding = '0';
+                            el.style.marginBottom = '0';
+                        });
+                    }, 350);
+                }
+                // Update state and delete after animation completes
+                setTimeout(async () => {
+                    const idx = API.items.findIndex(i => i.id === id);
+                    if (idx !== -1) API.items[idx].isChecked = true;
+                    try { await API.deleteItem(id); } catch(e) {}
+                    API.items = API.items.filter(i => i.id !== id);
+                    this.renderShoppingModeList();
+                }, 750);
             } else {
-                upgradeTitle.textContent = '⭐ Upgrade to Family';
-                upgradeSub.textContent = '£2.99 one-time — unlimited everything';
+                this.renderShoppingModeList();
             }
-        }
-        const isSilent = localStorage.getItem('bm_silent') === 'true';
-        localStorage.setItem('bm_silent', String(!isSilent));
-        const toggle = document.getElementById('silentModeToggle');
-        const thumb = document.getElementById('silentModeThumb');
-        const sub = document.getElementById('silentModeSub');
-        if (toggle) toggle.style.background = !isSilent ? '#005EA5' : '#e5e7eb';
-        if (thumb) thumb.style.left = !isSilent ? '22px' : '2px';
-        if (sub) sub.textContent = !isSilent ? 'Sounds are muted' : 'Mute item ping sounds';
-        Utils.showToast(!isSilent ? '🔇 Silent mode on' : '🔔 Silent mode off');
-    },
-
-    // ===== HELP GUIDE =====
-    showHelp() {
-        this.closeSettings();
-        const modal = document.getElementById('modal');
-        const overlay = document.getElementById('modalOverlay');
-        modal.innerHTML = `
-            <div style="padding:4px 0 8px;max-height:70vh;overflow-y:auto;">
-                <h3 style="margin:0 0 16px;font-size:18px;color:#1a1a2e;">📖 How to Use BasketMate</h3>
-
-                <div class="help-section">
-                    <div class="help-icon">🏠</div>
-                    <div>
-                        <div class="help-title">Household Sharing</div>
-                        <div class="help-text">Create a household and share your 6-letter code with family. Everyone with the same code shares the same shopping list in real time.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">🔗</div>
-                    <div>
-                        <div class="help-title">Join a Household</div>
-                        <div class="help-text">If someone you live with already has BasketMate, go to Settings → Join a Household and enter their 6-letter code. You will instantly share the same list in real time.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">🏪</div>
-                    <div>
-                        <div class="help-title">Choose Your Store</div>
-                        <div class="help-text">Tap any store on the home screen to open it. Each store has its own aisles and shopping list. Use the ➕ Add Store button at the bottom to add a new shop.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">📋</div>
-                    <div>
-                        <div class="help-title">Adding Items</div>
-                        <div class="help-text">Tap an aisle to open it. Tap a product to add it to your list — tap again to add more than one. Hold for 2 seconds on a product already in your list to remove it instantly. On desktop, right-click to remove.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">➕</div>
-                    <div>
-                        <div class="help-title">Add New Products to an Aisle</div>
-                        <div class="help-text">Open an aisle and tap Add Product at the bottom right. The new product will be saved to that aisle for future use. Tap the 🗑 icon next to any product to remove it from the aisle.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">↕️</div>
-                    <div>
-                        <div class="help-title">Reorder Aisles</div>
-                        <div class="help-text">Press and hold any aisle row and drag it up or down to match the layout of your supermarket. Your order is saved automatically.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">⭐</div>
-                    <div>
-                        <div class="help-title">Favourites</div>
-                        <div class="help-text">Tap the star ⭐ on any product to save it as a favourite. Access all your favourites from the Favourites tab inside a store for one-tap adding.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">🛒</div>
-                    <div>
-                        <div class="help-title">My List (Shopping Mode)</div>
-                        <div class="help-text">Tap My List at the bottom to see a clean full-screen view of everything across all stores, sorted by aisle. Tap items to check them off as you shop. Use the ← back button to return.</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">🔇</div>
-                    <div>
-                        <div class="help-title">Silent Mode</div>
-                        <div class="help-text">Go to Settings and toggle Silent Mode on to mute the ping sound when checking off items. Useful if you're shopping somewhere quiet!</div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <div class="help-icon">🔔</div>
-                    <div>
-                        <div class="help-title">Notifications</div>
-                        <div class="help-text">When a family member adds something to the list, you'll get a notification — even if the app is closed.</div>
-                    </div>
-                </div>
-
-                <button class="modal-btn confirm" style="width:100%;margin-top:16px;" onclick="Utils.closeModal()">Got it! 👍</button>
-            </div>`;
-        overlay.classList.add('show');
+        } catch(e) { console.log('toggleShopItem error:', e); }
     }
 });

@@ -41,18 +41,54 @@ const App = {
         this.showSplash();
 
         const hasHousehold = API.loadHousehold();
+        const hasLanguage = !!localStorage.getItem('bm_language');
+
         if (hasHousehold) {
             API.memberName = localStorage.getItem('bm_member_name') || 'Someone';
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
                 if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
             }, 1800);
-            API.connectSSE();
-            API.startKeepAlive();
-            setTimeout(() => this.setupPushNotifications(), 4000);
+            if (!hasLanguage) {
+                // Existing user but no language set — show picker first
+                setTimeout(() => this.showLanguageFirst(), 2200);
+            } else {
+                API.connectSSE();
+                API.startKeepAlive();
+                setTimeout(() => this.setupPushNotifications(), 4000);
+            }
         } else {
-            setTimeout(() => this.showHouseholdSetup(), 2200);
+            setTimeout(() => this.showLanguageFirst(), 2200);
         }
+    },
+
+    applyTranslations() {
+        const labels = {
+            'navLabelMyCode': 'myCode',
+            'navLabelAddStore': 'addStore',
+            'navLabelMyList': 'myList',
+            'navLabelMyList2': 'myList',
+            'navLabelMyList3': 'myList',
+            'navLabelAddProduct': 'addProduct',
+            'aislesHeader': 'aisles',
+            'aislesSubHeader': 'tapAisleToAdd',
+            'tabListLabel': 'list',
+            'tabFavsLabel': 'favourites',
+        };
+        Object.entries(labels).forEach(([id, key]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = t(key);
+        });
+        // Fix aisles header emoji
+        const aislesHeader = document.getElementById('aislesHeader');
+        if (aislesHeader) aislesHeader.innerHTML = '🏪 ' + t('aisles');
+        // Shopping mode label
+        const shopLabel = document.getElementById('shoppingModeLabel');
+        if (shopLabel) shopLabel.textContent = t('shoppingList');
+        const homeSub = document.querySelector('.home-sub');
+        if (homeSub) homeSub.textContent = t('whereShoppingToday');
+        const settingsTitle = document.querySelector('.settings-title');
+        if (settingsTitle) settingsTitle.textContent = t('settings');
     },
 
     showSplash() {
@@ -85,6 +121,52 @@ const App = {
         }).join('');
     },
 
+    showLanguageFirst() {
+        // If language already set, skip straight to household setup
+        if (localStorage.getItem('bm_language')) {
+            this.showHouseholdSetup();
+            return;
+        }
+        const splash = document.getElementById('splashScreen');
+        if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
+        const overlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('modal');
+        const langOptions = LANGUAGES.map(l =>
+            `<button onclick="App.pickLanguage('${l.code}')" id="langpick-${l.code}"
+                style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid #e5e7eb;border-radius:12px;background:white;font-size:16px;cursor:pointer;text-align:left;width:100%;margin-bottom:8px;">
+                <span style="font-size:28px;">${l.flag}</span>
+                <span style="font-weight:600;color:#1a1a2e;">${l.name}</span>
+            </button>`
+        ).join('');
+        modal.innerHTML = `
+            <div style="text-align:center;padding:8px 0 16px;">
+                <div style="font-size:48px;margin-bottom:12px;">🌍</div>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Choose Your Language</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">Select your preferred language to continue.</p>
+                <div style="text-align:left;">
+                    ${langOptions}
+                </div>
+            </div>`;
+        overlay.classList.add('show');
+        overlay.onclick = null;
+    },
+
+    pickLanguage(code) {
+        localStorage.setItem('bm_language', code);
+        document.body.dir = code === 'ur' ? 'rtl' : 'ltr';
+        App.applyTranslations();
+        const overlay = document.getElementById('modalOverlay');
+        overlay.classList.remove('show');
+        // If household already exists, connect SSE. Otherwise show household setup.
+        if (API.householdId) {
+            API.connectSSE();
+            API.startKeepAlive();
+            setTimeout(() => App.setupPushNotifications(), 3000);
+        } else {
+            setTimeout(() => App.showHouseholdSetup(), 200);
+        }
+    },
+
     showHouseholdSetup() {
         const splash = document.getElementById('splashScreen');
         if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
@@ -93,20 +175,20 @@ const App = {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🛒</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Welcome to BasketMate</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">Create a household to get started,<br>or join an existing one with a code.</p>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('welcomeToBasketMate')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">${t('createOrJoin').replace('\n','<br>')}</p>
                 <button onclick="App.createHousehold()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;">
-                    ✨ Create New Household
+                    ${t('createNewHousehold')}
                 </button>
                 <div style="position:relative;margin-bottom:12px;">
                     <div style="height:1px;background:#e5e7eb;"></div>
-                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:white;padding:0 12px;color:#9ca3af;font-size:13px;">or</span>
+                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:white;padding:0 12px;color:#9ca3af;font-size:13px;">${t('or')}</span>
                 </div>
                 <div style="display:flex;gap:8px;">
-                    <input type="text" id="joinCodeInput" placeholder="Enter household code" maxlength="6"
+                    <input type="text" id="joinCodeInput" placeholder="${t('enterHouseholdCode')}" maxlength="6"
                         style="flex:1;padding:13px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;text-transform:uppercase;letter-spacing:2px;outline:none;text-align:center;"
                         oninput="this.value=this.value.toUpperCase()">
-                    <button onclick="App.joinHousehold()" style="padding:13px 18px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">Join</button>
+                    <button onclick="App.joinHousehold()" style="padding:13px 18px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">${t('join')}</button>
                 </div>
                 <p id="householdError" style="color:#dc2626;font-size:13px;margin:8px 0 0;display:none;"></p>
             </div>`;
@@ -123,7 +205,7 @@ const App = {
         } catch(e) {
             Utils.showToast('Failed to create household', true);
             const btn = document.querySelector('#modal button');
-            if (btn) { btn.disabled = false; btn.textContent = '✨ Create New Household'; }
+            if (btn) { btn.disabled = false; btn.textContent = t('createNewHousehold'); }
         }
     },
 
@@ -131,13 +213,12 @@ const App = {
         document.getElementById('modal').innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🏠</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Your Household Code</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">Share this code with your family so they can join your list.</p>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('yourHouseholdCode')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">${t('shareCode')}</p>
                 <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:20px;margin-bottom:20px;">
                     <div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${code}</div>
                 </div>
-                <p style="color:#9ca3af;font-size:12px;margin:0 0 20px;">You can find this code later in the app settings.</p>
-                <button onclick="App.showNameSetup()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">Next →</button>
+                <button onclick="App.showNameSetup()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">${t('next')}</button>
             </div>`;
     },
 
@@ -145,12 +226,12 @@ const App = {
         document.getElementById('modal').innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">👤</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">What's your name?</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">So your family knows who added items to the list.</p>
-                <input type="text" id="memberNameInput" placeholder="e.g. Andreas, Sharon..." maxlength="20"
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('whatsYourName')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">${t('nameSoFamily')}</p>
+                <input type="text" id="memberNameInput" placeholder="${t('namePlaceholder')}" maxlength="20"
                     style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;margin-bottom:16px;box-sizing:border-box;">
                 <p id="nameError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;">Please enter your name.</p>
-                <button onclick="App.saveMemberName()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">Let's Go! 🛒</button>
+                <button onclick="App.saveMemberName()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">${t('letsGo')}</button>
             </div>`;
         setTimeout(() => document.getElementById('memberNameInput')?.focus(), 100);
     },
@@ -161,25 +242,7 @@ const App = {
         if (!name) { document.getElementById('nameError').style.display = 'block'; input.style.borderColor = '#dc2626'; return; }
         localStorage.setItem('bm_member_name', name);
         API.memberName = name;
-        this.showWelcomeSplash(name);
-    },
-
-    showWelcomeSplash(name) {
-        const overlay = document.getElementById('modalOverlay');
-        const modal = document.getElementById('modal');
-        modal.innerHTML = `
-            <div style="text-align:center;padding:24px 0 20px;">
-                <div style="font-size:64px;margin-bottom:16px;animation:bounceIn 0.6s ease;">🛒</div>
-                <h2 style="margin:0 0 8px;font-size:26px;color:#005EA5;font-weight:900;">Welcome, ${Utils.escapeHtml(name)}!</h2>
-                <p style="color:#6b7280;font-size:15px;margin:0 0 8px;">Your smart shopping companion is ready.</p>
-                <p style="color:#9ca3af;font-size:13px;margin:0;">Taking you to your list...</p>
-            </div>`;
-        overlay.classList.add('show');
-        overlay.onclick = null;
-        setTimeout(() => {
-            overlay.classList.remove('show');
-            this.startApp();
-        }, 4200);
+        this.startApp();
     },
 
     async joinHousehold() {
@@ -263,64 +326,6 @@ const App = {
                 <button onclick="Utils.closeModal()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">OK</button>
             </div>`;
         overlay.classList.add('show');
-    },
-
-    showUpgradePrompt(reason) {
-        this.closeSettings();
-        const daysLeft = API.trialDaysLeft;
-        const trialExpired = !API.isTrialActive && !!API.trialStartedAt;
-        const modal = document.getElementById('modal');
-        const overlay = document.getElementById('modalOverlay');
-        modal.innerHTML = `
-            <div style="text-align:center;padding:8px 0 16px;">
-                <div style="font-size:52px;margin-bottom:12px;">👨‍👩‍👧‍👦</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">BasketMate Family</h2>
-                ${trialExpired
-                    ? `<div style="background:#fee2e2;border-radius:10px;padding:10px;margin-bottom:14px;font-size:13px;color:#dc2626;font-weight:600;">⏰ Your 15-day free trial has ended</div>`
-                    : daysLeft <= 5
-                    ? `<div style="background:#fef3c7;border-radius:10px;padding:10px;margin-bottom:14px;font-size:13px;color:#d97706;font-weight:600;">⏳ ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left in your trial</div>`
-                    : ''
-                }
-                ${reason ? `<p style="color:#6b7280;font-size:13px;margin:0 0 16px;">${reason}</p>` : ''}
-                <div style="background:#f0f9ff;border-radius:14px;padding:16px;margin-bottom:20px;text-align:left;">
-                    <div style="font-weight:700;color:#1a1a2e;margin-bottom:10px;">Everything in Family:</div>
-                    <div style="font-size:14px;color:#374151;line-height:2;">
-                        ✅ Unlimited stores<br>
-                        ✅ Unlimited aisles<br>
-                        ✅ Unlimited products<br>
-                        ✅ Household sharing<br>
-                        ✅ Real-time sync<br>
-                        ✅ Push notifications
-                    </div>
-                </div>
-                <div style="background:#005EA5;color:white;border-radius:14px;padding:16px;margin-bottom:16px;">
-                    <div style="font-size:28px;font-weight:900;">£2.99</div>
-                    <div style="font-size:13px;opacity:0.85;">One-time payment — yours forever</div>
-                </div>
-                <button onclick="App.triggerPurchase()" style="width:100%;padding:14px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px;">
-                    🛒 Upgrade to Family
-                </button>
-                <button onclick="Utils.closeModal()" style="width:100%;padding:12px;background:none;color:#9ca3af;border:none;font-size:14px;cursor:pointer;">
-                    ${API.isTrialActive ? 'Continue with trial' : 'Maybe later'}
-                </button>
-            </div>`;
-        overlay.classList.add('show');
-    },
-
-    triggerPurchase() {
-        // This will be replaced with real Google Play billing
-        // For now simulate a successful purchase for testing
-        Utils.closeModal();
-        Utils.showToast('Opening Google Play...');
-        // TODO: integrate Android billing via TWA/Play Billing
-        // For web testing, simulate purchase:
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            setTimeout(() => {
-                API.verifyPurchase('TEST_TOKEN_' + Date.now())
-                    .then(() => Utils.showToast('🎉 Upgraded to BasketMate Family!'))
-                    .catch(() => Utils.showToast('Purchase failed', true));
-            }, 1000);
-        }
     },
 
     darken(hex) {
