@@ -13,7 +13,7 @@ Object.assign(App, {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ endpoint: sub.endpoint, active })
             });
-        } catch(e) {}
+        } catch (e) { }
     },
 
     openShoppingMode() { this.enterShoppingMode(); },
@@ -62,7 +62,7 @@ Object.assign(App, {
         const allItems = API.items.filter(i => !i.isChecked);
         // Update stats count live
         const stats = document.getElementById('shoppingModeStats');
-        if (stats) stats.textContent = `${allItems.length} item${allItems.length !== 1 ? 's' : ''}`;
+        if (stats) stats.textContent = t('items', allItems.length);
         if (!allItems.length) {
             container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#9ca3af;">
                 <div style="font-size:48px;margin-bottom:12px;">✅</div>
@@ -111,15 +111,15 @@ Object.assign(App, {
 
             storeAisles.forEach(aisle => {
                 html += `<div class="shop-aisle-group">
-                    <div class="shop-aisle-header">${Utils.escapeHtml(aisle.name)}</div>
-                    ${grouped[aisle.id].sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
+                    <div class="shop-aisle-header">${Utils.escapeHtml(translateAisleName(aisle.name))}</div>
+                    ${grouped[aisle.id].sort((a, b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
                 </div>`;
             });
 
             if (noAisle.length) {
                 html += `<div class="shop-aisle-group">
                     <div class="shop-aisle-header">Other</div>
-                    ${noAisle.sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
+                    ${noAisle.sort((a, b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
                 </div>`;
             }
         });
@@ -155,7 +155,7 @@ Object.assign(App, {
                 osc.stop(ctx.currentTime + 0.4);
             };
             if (ctx.state === 'suspended') { ctx.resume().then(play); } else { play(); }
-        } catch(e) {}
+        } catch (e) { }
     },
 
     async toggleShopItem(id) {
@@ -190,13 +190,13 @@ Object.assign(App, {
                 setTimeout(async () => {
                     const idx = API.items.findIndex(i => i.id === id);
                     if (idx !== -1) API.items[idx].isChecked = true;
-                    try { await API.deleteItem(id); } catch(e) {}
+                    try { await API.deleteItem(id); } catch (e) { }
                     API.items = API.items.filter(i => i.id !== id);
                     this.renderShoppingModeList();
                 }, 750);
             } else {
                 this.renderShoppingModeList();
             }
-        } catch(e) { console.log('toggleShopItem error:', e); }
+        } catch (e) { console.log('toggleShopItem error:', e); }
     }
 });
