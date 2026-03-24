@@ -1,4 +1,4 @@
-const CACHE_NAME = 'basketmate-v11';
+const CACHE_NAME = 'basketmate-v12';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -11,15 +11,15 @@ const STATIC_ASSETS = [
     '/js/stores.js',
     '/js/shopping.js',
     '/js/settings.js',
-    '/img/icon-192.png',
-    '/img/icon-512.png',
-    '/img/atstudios-logo.jpg'
     '/js/i18n/core.js',
     '/js/i18n/lang-en.js',
     '/js/i18n/lang-pl.js',
     '/js/i18n/lang-ro.js',
     '/js/i18n/lang-el.js',
     '/js/i18n/lang-ur.js',
+    '/img/icon-192.png',
+    '/img/icon-512.png',
+    '/img/atstudios-logo.jpg'
 ];
 
 self.addEventListener('install', e => {
