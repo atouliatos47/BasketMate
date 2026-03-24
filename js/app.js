@@ -53,6 +53,7 @@ const App = {
                 // Existing user but no language set — show picker first
                 setTimeout(() => this.showLanguageFirst(), 2200);
             } else {
+                this.applyTranslations(); // ← ADD THIS LINE
                 API.connectSSE();
                 API.startKeepAlive();
                 setTimeout(() => this.setupPushNotifications(), 4000);
