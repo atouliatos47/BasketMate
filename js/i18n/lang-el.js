@@ -40,7 +40,7 @@ TRANSLATIONS.el = {
     items: (n) => `${n} προϊόν${n !== 1 ? 'τα' : ''}`,
 
     settings: '⚙️ Ρυθμίσεις',
-    Language: 'Γλώσσα',                    // ← Added
+    Language: 'Γλώσσα',
     myHouseholdCode: 'Κωδικός νοικοκυριού',
     shareWithFamily: 'Μοιραστείτε με την οικογένεια',
     changeMyName: 'Αλλαγή ονόματος',
@@ -115,5 +115,5 @@ TRANSLATIONS.el = {
     nameUpdated: (name) => `Το όνομα ενημερώθηκε σε ${name} ✓`,
     savedAsFavourite: (name) => `${name} αποθηκεύτηκε ως αγαπημένο ⭐`,
     removedFromFavourites: (name) => `${name} αφαιρέθηκε από αγαπημένα`,
-    save: 'Αποθήκευση'                    // ← No comma after this line
+    save: 'Αποθήκευση'
 };

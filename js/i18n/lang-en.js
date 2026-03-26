@@ -40,7 +40,7 @@ TRANSLATIONS.en = {
     items: (n) => `${n} item${n !== 1 ? 's' : ''}`,
 
     settings: '⚙️ Settings',
-    Language: 'Language',                    // ← Added
+    Language: 'Language',
     myHouseholdCode: 'My Household Code',
     shareWithFamily: 'Share with family to join your list',
     changeMyName: 'Change My Name',
@@ -115,4 +115,5 @@ TRANSLATIONS.en = {
     nameUpdated: (name) => `Name updated to ${name} ✓`,
     savedAsFavourite: (name) => `${name} saved as favourite ⭐`,
     removedFromFavourites: (name) => `${name} removed from favourites`,
+    save: 'Save'
 };

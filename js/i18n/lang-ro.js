@@ -40,7 +40,7 @@ TRANSLATIONS.ro = {
     items: (n) => `${n} produs${n !== 1 ? 'e' : ''}`,
 
     settings: '⚙️ Setări',
-    Language: 'Limbă',                    // ← Added
+    Language: 'Limbă',
     myHouseholdCode: 'Codul gospodăriei mele',
     shareWithFamily: 'Împărtășește cu familia pentru a se alătura',
     changeMyName: 'Schimbă numele meu',
@@ -115,4 +115,5 @@ TRANSLATIONS.ro = {
     nameUpdated: (name) => `Numele actualizat la ${name} ✓`,
     savedAsFavourite: (name) => `${name} salvat ca favorit ⭐`,
     removedFromFavourites: (name) => `${name} eliminat din favorite`,
+    save: 'Salvează'
 };

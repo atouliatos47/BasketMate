@@ -40,7 +40,7 @@ TRANSLATIONS.pl = {
     items: (n) => `${n} produkt${n !== 1 ? 'y' : ''}`,
 
     settings: '⚙️ Ustawienia',
-    Language: 'Język',                    // ← Added
+    Language: 'Język',
     myHouseholdCode: 'Kod mojego gospodarstwa',
     shareWithFamily: 'Udostępnij rodzinie, aby dołączyć do listy',
     changeMyName: 'Zmień swoje imię',
