@@ -18,6 +18,7 @@ TRANSLATIONS.zh = {
     myCode: '我的家庭码',
     myList: '我的清单',
     addProduct: '添加商品',
+    addAisle: '添加货架',
 
     aisles: '货架',
     tapAisleToAdd: '点击货架添加商品',

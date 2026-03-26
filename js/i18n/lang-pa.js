@@ -18,6 +18,7 @@ TRANSLATIONS.pa = {
     myCode: 'ਮੇਰਾ ਕੋਡ',
     myList: 'ਮੇਰੀ ਲਿਸਟ',
     addProduct: 'ਉਤਪਾਦ ਸ਼ਾਮਲ ਕਰੋ',
+    addAisle: 'ਗਲੀ ਸ਼ਾਮਲ ਕਰੋ',
 
     aisles: 'ਗਲੀਆਂ',
     tapAisleToAdd: 'ਉਤਪਾਦ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਗਲੀ ਤੇ ਟੈਪ ਕਰੋ',

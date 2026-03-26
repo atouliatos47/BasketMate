@@ -18,6 +18,7 @@ TRANSLATIONS.bn = {
     myCode: 'আমার কোড',
     myList: 'আমার লিস্ট',
     addProduct: 'পণ্য যোগ করুন',
+    addAisle: 'আইল যোগ করুন',
 
     aisles: 'আইল',
     tapAisleToAdd: 'পণ্য যোগ করতে আইলে ট্যাপ করুন',
