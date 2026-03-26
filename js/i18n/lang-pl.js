@@ -87,6 +87,7 @@ TRANSLATIONS.pl = {
     welcomeToBasketMate: 'Witaj w BasketMate',
     createOrJoin: 'Utwórz gospodarstwo, aby zacząć,\nlub dołącz z kodem.',
     createNewHousehold: '✨ Utwórz nowe gospodarstwo',
+    creating: 'Tworzenie...',
     or: 'lub',
     enterHouseholdCode: 'Wpisz kod gospodarstwa',
     join: 'Dołącz',

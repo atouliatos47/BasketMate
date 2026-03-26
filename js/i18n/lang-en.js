@@ -87,6 +87,7 @@ TRANSLATIONS.en = {
     welcomeToBasketMate: 'Welcome to BasketMate',
     createOrJoin: 'Create a household to get started,\nor join an existing one with a code.',
     createNewHousehold: '✨ Create New Household',
+    creating: 'Creating...',
     or: 'or',
     enterHouseholdCode: 'Enter household code',
     join: 'Join',

@@ -78,6 +78,7 @@ TRANSLATIONS.ur = {
     welcomeToBasketMate: 'BasketMate میں خوش آمدید',
     createOrJoin: 'شروع کرنے کے لیے گھرانہ بنائیں\nیا کوڈ کے ساتھ شامل ہوں۔',
     createNewHousehold: '✨ نیا گھرانہ بنائیں',
+    creating: 'بنایا جا رہا ہے...',
     or: 'یا',
     enterHouseholdCode: 'گھرانے کا کوڈ درج کریں',
     join: 'شامل ہوں',

@@ -87,6 +87,7 @@ TRANSLATIONS.ro = {
     welcomeToBasketMate: 'Bun venit la BasketMate',
     createOrJoin: 'Creează o gospodărie pentru a începe\nsau alătură-te cu un cod.',
     createNewHousehold: '✨ Creează gospodărie nouă',
+    creating: 'Se creează...',
     or: 'sau',
     enterHouseholdCode: 'Introdu codul gospodăriei',
     join: 'Alătură-te',

@@ -87,6 +87,7 @@ TRANSLATIONS.el = {
     welcomeToBasketMate: 'Καλώς ήρθατε στο BasketMate',
     createOrJoin: 'Δημιουργήστε νοικοκυριό για να ξεκινήσετε\nή εγγραφείτε με κωδικό.',
     createNewHousehold: '✨ Δημιουργία νοικοκυριού',
+    creating: 'Δημιουργία...',
     or: 'ή',
     enterHouseholdCode: 'Εισάγετε κωδικό νοικοκυριού',
     join: 'Εγγραφή',
