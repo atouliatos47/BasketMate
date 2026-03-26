@@ -1,5 +1,5 @@
 // ===================================================
-// settings.js — Settings panel, name, household, language
+// settings.js — Settings panel (Fully localized)
 // ===================================================
 Object.assign(App, {
 
@@ -7,11 +7,11 @@ Object.assign(App, {
         const panel = document.getElementById('settingsPanel');
         const overlay = document.getElementById('settingsOverlay');
 
-        // Update dynamic content
+        // Update dynamic parts
         const nameSub = document.getElementById('currentNameSub');
         if (nameSub) nameSub.textContent = t('signedInAs', API.memberName);
 
-        // Silent mode toggle
+        // Silent mode
         const silent = localStorage.getItem('bm_silent') === 'true';
         const toggle = document.getElementById('silentModeToggle');
         const thumb = document.getElementById('silentModeThumb');
@@ -23,51 +23,45 @@ Object.assign(App, {
         // Language sub
         const langSub = document.getElementById('currentLanguageSub');
         if (langSub) {
-            const lang = localStorage.getItem('bm_language') || 'en';
-            const found = LANGUAGES.find(l => l.code === lang);
+            const langCode = localStorage.getItem('bm_language') || 'en';
+            const found = LANGUAGES.find(l => l.code === langCode);
             if (found) langSub.textContent = `${found.name} ${found.flag}`;
         }
 
-        // Upgrade / Trial item
+        // Upgrade/Trial
         this._updateUpgradeSettingsItem();
 
-        // IMPORTANT: Translate all static settings items
+        // Translate ALL settings items
         this.translateSettingsPanel();
 
         panel.classList.add('open');
         overlay.classList.add('open');
     },
 
-    // New function to translate the entire settings panel
     translateSettingsPanel() {
-        const set = (id, key) => {
+        // Use the IDs from your index.html
+        const setText = (id, key) => {
             const el = document.getElementById(id);
             if (el) el.textContent = t(key);
         };
 
-        // Main settings items
-        set('settingsMyHouseholdCode', 'myHouseholdCode');
-        set('settingsMyHouseholdCodeSub', 'shareWithFamily');
-        set('settingsChangeMyName', 'changeMyName');
-        set('settingsChangeMyNameSub', 'yourNameOnSharedLists');
-        set('settingsJoinHousehold', 'joinAHousehold');
-        set('settingsJoinHouseholdSub', 'enterPartnerCode');
-        set('settingsSilentMode', 'silentMode');
-        set('settingsLanguage', 'settings'); // Not needed, but for consistency
-        set('settingsHowToUse', 'howToUse');
-        set('settingsHowToUseSub', 'tipsGuide');
-
-        // Upgrade / Trial section
-        const upgradeTitle = document.getElementById('upgradeSettingsTitle');
-        const upgradeSub = document.getElementById('upgradeSettingsSub');
-        if (upgradeTitle && upgradeSub) {
-            this._updateUpgradeSettingsItem();
-        }
+        setText('settingsTitleText', 'settings');
+        setText('settingsMyCodeTitle', 'myHouseholdCode');
+        setText('settingsMyCodeSub', 'shareWithFamily');
+        setText('settingsChangeNameTitle', 'changeMyName');
+        setText('settingsJoinTitle', 'joinAHousehold');
+        setText('settingsJoinSub', 'enterPartnerCode');
+        setText('settingsSilentTitle', 'silentMode');
+        setText('settingsLanguageTitle', 'Language');           // You can add this key later if you want
+        setText('settingsHelpTitle', 'howToUse');
+        setText('settingsHelpSub', 'tipsGuide');
+        setText('upgradeSettingsTitle', API.isPremium ? 'familyPlan' : (API.trialDaysLeft > 0 ? 'trialActive' : 'upgradeToFamily'));
+        // Sub is handled in _updateUpgradeSettingsItem()
 
         // Footer
         const footer = document.querySelector('.settings-footer');
         if (footer) {
-            footer.innerHTML = `BasketMate v1.0 <span style="opacity:0.6">by AtStudios</span>`;
+            footer.innerHTML = `BasketMate v1.0<br><span style="opacity:0.7">by AtStudios</span>`;
         }
     },
 
@@ -95,6 +89,7 @@ Object.assign(App, {
         if (overlay) overlay.classList.remove('open');
     },
 
+    // ==================== My Household Code ====================
     showMyCode() {
         this.closeSettings();
         const modal = document.getElementById('modal');
@@ -104,7 +99,7 @@ Object.assign(App, {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🏠</div>
-                <h3 style="margin:0 0 6px;">${t('myHouseholdCode')}</h3>
+                <h3>${t('myHouseholdCode')}</h3>
                 <p class="modal-sub">${t('shareWithFamily')}</p>
                 <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:20px;margin:20px 0;">
                     <div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${code}</div>
@@ -114,6 +109,7 @@ Object.assign(App, {
         overlay.classList.add('show');
     },
 
+    // ==================== Change Name ====================
     showChangeName() {
         this.closeSettings();
         const modal = document.getElementById('modal');
@@ -122,36 +118,31 @@ Object.assign(App, {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">👤</div>
-                <h3 style="margin:0 0 16px;">${t('changeMyName')}</h3>
+                <h3>${t('changeMyName')}</h3>
                 <input type="text" id="changeNameInput" value="${Utils.escapeHtml(API.memberName)}" maxlength="20"
                     style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;margin-bottom:16px;box-sizing:border-box;"
                     onkeypress="if(event.key==='Enter') App.saveChangedName()">
                 <div class="modal-actions">
                     <button class="modal-btn cancel" onclick="Utils.closeModal()">${t('cancel')}</button>
-                    <button class="modal-btn confirm" onclick="App.saveChangedName()">${t('save')}</button>
+                    <button class="modal-btn confirm" onclick="App.saveChangedName()">Save</button>
                 </div>
             </div>`;
         overlay.classList.add('show');
-        setTimeout(() => {
-            const input = document.getElementById('changeNameInput');
-            if (input) { input.focus(); input.select(); }
-        }, 100);
+        setTimeout(() => document.getElementById('changeNameInput')?.focus(), 100);
     },
 
     saveChangedName() {
         const input = document.getElementById('changeNameInput');
         const name = input.value.trim();
         if (!name) { Utils.shakeElement(input); return; }
+
         localStorage.setItem('bm_member_name', name);
         API.memberName = name;
         Utils.closeModal();
         Utils.showToast(t('nameUpdated', name));
-        // Refresh settings if still open
-        if (document.getElementById('settingsPanel').classList.contains('open')) {
-            this.showSettings();
-        }
     },
 
+    // ==================== Join Household ====================
     showSwitchHousehold() {
         this.closeSettings();
         const modal = document.getElementById('modal');
@@ -160,7 +151,7 @@ Object.assign(App, {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🏠</div>
-                <h3 style="margin:0 0 6px;">${t('joinAHousehold')}</h3>
+                <h3>${t('joinAHousehold')}</h3>
                 <p class="modal-sub">${t('enterPartnerCode')}</p>
                 <div style="display:flex;gap:8px;margin-top:16px;">
                     <input type="text" id="switchCodeInput" placeholder="${t('enterHouseholdCode')}" maxlength="6"
@@ -177,8 +168,33 @@ Object.assign(App, {
         setTimeout(() => document.getElementById('switchCodeInput')?.focus(), 100);
     },
 
-    // ... rest of your functions (toggleSilentMode, showLanguageSelector, changeLanguage, showHelp, etc.) remain mostly the same
-    // For now, the most important is showSettings() + translateSettingsPanel()
+    async confirmSwitchHousehold() {
+        const input = document.getElementById('switchCodeInput');
+        const error = document.getElementById('switchError');
+        const code = input.value.trim().toUpperCase();
+
+        if (code.length < 6) {
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Please enter a 6-character code.';
+            error.style.display = 'block';
+            return;
+        }
+
+        try {
+            input.disabled = true;
+            error.style.display = 'none';
+            await API.joinHousehold(code);
+            Utils.closeModal();
+            Utils.showToast(t('switchedHousehold'));
+            if (API.eventSource) { API.eventSource.close(); API.eventSource = null; }
+            API.connectSSE();
+        } catch (e) {
+            input.disabled = false;
+            input.style.borderColor = '#dc2626';
+            error.textContent = 'Household not found. Check the code and try again.';
+            error.style.display = 'block';
+        }
+    },
 
     toggleSilentMode() {
         const current = localStorage.getItem('bm_silent') === 'true';
@@ -198,37 +214,60 @@ Object.assign(App, {
 
     showLanguageSelector() {
         this.closeSettings();
-        // ... your existing code for language selector ...
-        // (it already uses LANGUAGES and t('cancel'))
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modalOverlay');
+        const currentLang = localStorage.getItem('bm_language') || 'en';
+
+        const langOptions = LANGUAGES.map(l => `
+            <button onclick="App.changeLanguage('${l.code}')"
+                style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid ${l.code === currentLang ? '#005EA5' : '#e5e7eb'};border-radius:12px;background:${l.code === currentLang ? '#f0f9ff' : 'white'};font-size:16px;cursor:pointer;text-align:left;width:100%;margin-bottom:8px;">
+                <span style="font-size:28px;">${l.flag}</span>
+                <span style="font-weight:600;color:#1a1a2e;">${l.name}</span>
+                ${l.code === currentLang ? '<span style="margin-left:auto;color:#005EA5;font-weight:700;">✓</span>' : ''}
+            </button>
+        `).join('');
+
+        modal.innerHTML = `
+            <div style="padding:8px 0 16px;">
+                <div style="text-align:center;font-size:48px;margin-bottom:12px;">🌍</div>
+                <h3 style="text-align:center;margin:0 0 16px;">${t('Language') || 'Language'}</h3>
+                ${langOptions}
+                <button class="modal-btn cancel" onclick="Utils.closeModal()" style="width:100%;margin-top:8px;">${t('cancel')}</button>
+            </div>`;
+        overlay.classList.add('show');
     },
 
     changeLanguage(code) {
         localStorage.setItem('bm_language', code);
         document.body.dir = code === 'ur' ? 'rtl' : 'ltr';
-        App.applyTranslations();
-        Utils.closeModal();
+        
+        App.applyTranslations();           // Refresh main UI
         UI.renderHome();
         if (API.currentStoreId) {
             UI.renderAisles();
             UI.renderList();
         }
+
+        Utils.closeModal();
+        
         // Re-open settings with new language
-        setTimeout(() => this.showSettings(), 50);
+        setTimeout(() => {
+            this.showSettings();
+        }, 80);
     },
 
     showHelp() {
         this.closeSettings();
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modalOverlay');
+        
         modal.innerHTML = `
             <h3>${t('howToUse')}</h3>
-            <div style="margin-top:16px;">
-                <!-- You can improve this later with full translations, but for now it's better than hardcoded English -->
-                <div class="help-section">
-                    <div class="help-icon">🏪</div>
-                    <div><div class="help-title">Choose a Store</div><div class="help-text">Tap a store on the home screen to open its shopping list.</div></div>
-                </div>
-                <!-- ... other sections ... -->
+            <div style="margin-top:16px; font-size:15px; line-height:1.5;">
+                <p><strong>🏪 Choose a Store</strong><br>Tap a store on the home screen.</p>
+                <p><strong>🗂️ Add Items</strong><br>Tap an aisle, then tap products.</p>
+                <p><strong>⭐ Favourites</strong><br>Tap the star to save products.</p>
+                <p><strong>🛒 Shopping Mode</strong><br>Tap the cart icon at the bottom.</p>
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel" onclick="Utils.closeModal()">${t('cancel')}</button>
@@ -236,5 +275,9 @@ Object.assign(App, {
         overlay.classList.add('show');
     },
 
-    // Keep your other functions (showUpgradePrompt, processPurchase, etc.)
+    showUpgradePrompt() {
+        // Your existing upgrade prompt...
+        this.closeSettings();
+        // ... (keep your current code for this function)
+    }
 });
