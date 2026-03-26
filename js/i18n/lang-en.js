@@ -5,6 +5,7 @@ TRANSLATIONS.en = {
     appName: 'BasketMate',
     tagline: 'Your smart shopping companion',
     byAtStudios: 'by AtStudios',
+
     whereShoppingToday: 'Where are you shopping today?',
     liveStatus: '● Live',
     connectingStatus: '○ Connecting',
@@ -12,10 +13,12 @@ TRANSLATIONS.en = {
     itemsInList: (n) => `${n} item${n > 1 ? 's' : ''} in list`,
     productsCount: (n) => `${n} product${n !== 1 ? 's' : ''}`,
     noProducts: 'No products',
+
     addStore: 'Add Store',
     myCode: 'My Code',
     myList: 'My List',
     addProduct: 'Add Product',
+
     aisles: 'AISLES',
     tapAisleToAdd: 'Tap an aisle to add products',
     list: 'List',
@@ -25,18 +28,23 @@ TRANSLATIONS.en = {
     noFavouritesYet: 'No favourites yet!',
     tapStarToSave: 'Tap ⭐ on any product in an aisle to save it.',
     collectedOf: (checked, total) => `${checked} of ${total} collected`,
+
     noProductsYet: 'No products yet',
     addFirstProduct: 'Use the box below to add your first product.',
     inList: '✓ In list',
     add: '+ Add',
+
     shoppingList: '🛒 Shopping List',
     allShoppingLists: 'All Shopping Lists',
     allDone: 'All done! Your list is empty.',
     items: (n) => `${n} item${n !== 1 ? 's' : ''}`,
+
+    // ==================== SETTINGS ====================
     settings: '⚙️ Settings',
     myHouseholdCode: 'My Household Code',
     shareWithFamily: 'Share with family to join your list',
     changeMyName: 'Change My Name',
+    yourNameOnSharedLists: 'Your name on shared lists',
     signedInAs: (name) => `Signed in as ${name}`,
     joinAHousehold: 'Join a Household',
     enterPartnerCode: "Enter a partner's code to share their list",
@@ -54,6 +62,8 @@ TRANSLATIONS.en = {
     familyPlan: '✅ BasketMate Family',
     familyPlanSub: 'You have full access — thank you!',
     version: 'BasketMate v1.0',
+
+    // Modals & others
     addNewStore: '🏪 Add New Store',
     addNewStoreSubtitle: 'Add a supermarket or shop',
     storeName: 'Store Name',
@@ -73,6 +83,7 @@ TRANSLATIONS.en = {
     remove: 'Remove',
     addProduct2: '➕ Add Product',
     addProductPlaceholder: 'e.g. White Bread...',
+
     welcomeToBasketMate: 'Welcome to BasketMate',
     createOrJoin: 'Create a household to get started,\nor join an existing one with a code.',
     createNewHousehold: '✨ Create New Household',
@@ -86,9 +97,7 @@ TRANSLATIONS.en = {
     nameSoFamily: 'So your family knows who added items to the list.',
     namePlaceholder: 'e.g. Andreas, Sharon...',
     letsGo: "Let's Go! 🛒",
-    welcomeUser: (name) => `Welcome, ${name}!`,
-    readyMsg: 'Your smart shopping companion is ready.',
-    takingYou: 'Taking you to your list...',
+
     addedToList: (name) => `${name} added! 🛒`,
     removedFromList: (name) => `${name} removed ✓`,
     addedToAisle: (name) => `${name} added to aisle ✓`,
