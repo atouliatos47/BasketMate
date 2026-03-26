@@ -236,7 +236,7 @@ Object.assign(App, {
         modal.innerHTML = `
             <div style="padding:8px 0 16px;">
                 <div style="text-align:center;font-size:48px;margin-bottom:12px;">🌍</div>
-                <h3 style="text-align:center;margin:0 0 16px;">${t('Language') || 'Language'}</h3>
+                <h3 style="text-align:center;margin:0 0 16px;">Language</h3>
                 ${langOptions}
                 <button class="modal-btn cancel" onclick="Utils.closeModal()" style="width:100%;margin-top:8px;">${t('cancel')}</button>
             </div>`;

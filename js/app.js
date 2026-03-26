@@ -128,17 +128,24 @@ const App = {
             this.showHouseholdSetup();
             return;
         }
+
         const splash = document.getElementById('splashScreen');
-        if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
+        if (splash) { 
+            splash.classList.add('fade-out'); 
+            setTimeout(() => { splash.style.display = 'none'; }, 600); 
+        }
+
         const overlay = document.getElementById('modalOverlay');
         const modal = document.getElementById('modal');
-        const langOptions = LANGUAGES.map(l =>
-            `<button onclick="App.pickLanguage('${l.code}')" id="langpick-${l.code}"
+
+        const langOptions = LANGUAGES.map(l => `
+            <button onclick="App.pickLanguage('${l.code}')" id="langpick-${l.code}"
                 style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid #e5e7eb;border-radius:12px;background:white;font-size:16px;cursor:pointer;text-align:left;width:100%;margin-bottom:8px;">
                 <span style="font-size:28px;">${l.flag}</span>
                 <span style="font-weight:600;color:#1a1a2e;">${l.name}</span>
-            </button>`
-        ).join('');
+            </button>
+        `).join('');
+
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🌍</div>
