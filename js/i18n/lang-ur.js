@@ -34,6 +34,7 @@ TRANSLATIONS.ur = {
     allDone: 'بہت اچھا! فہرست خالی ہے۔',
     items: (n) => `${n} اشیاء`,
     settings: '⚙️ ترتیبات',
+    Language: 'زبان',
     myHouseholdCode: 'میرا گھریلو کوڈ',
     shareWithFamily: 'خاندان کے ساتھ شیئر کریں',
     changeMyName: 'میرا نام تبدیل کریں',

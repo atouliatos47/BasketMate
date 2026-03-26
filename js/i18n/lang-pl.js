@@ -39,9 +39,8 @@ TRANSLATIONS.pl = {
     allDone: 'Gotowe! Lista jest pusta.',
     items: (n) => `${n} produkt${n !== 1 ? 'y' : ''}`,
 
-    // ==================== SETTINGS ====================
     settings: '⚙️ Ustawienia',
-    Language: 'Język',
+    Language: 'Język',                    // ← Added
     myHouseholdCode: 'Kod mojego gospodarstwa',
     shareWithFamily: 'Udostępnij rodzinie, aby dołączyć do listy',
     changeMyName: 'Zmień swoje imię',

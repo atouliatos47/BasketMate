@@ -39,9 +39,8 @@ TRANSLATIONS.en = {
     allDone: 'All done! Your list is empty.',
     items: (n) => `${n} item${n !== 1 ? 's' : ''}`,
 
-    // ==================== SETTINGS ====================
     settings: '⚙️ Settings',
-    Language: 'Language',
+    Language: 'Language',                    // ← Added
     myHouseholdCode: 'My Household Code',
     shareWithFamily: 'Share with family to join your list',
     changeMyName: 'Change My Name',
@@ -64,7 +63,6 @@ TRANSLATIONS.en = {
     familyPlanSub: 'You have full access — thank you!',
     version: 'BasketMate v1.0',
 
-    // Modals & others
     addNewStore: '🏪 Add New Store',
     addNewStoreSubtitle: 'Add a supermarket or shop',
     storeName: 'Store Name',

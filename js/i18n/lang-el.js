@@ -34,6 +34,7 @@ TRANSLATIONS.el = {
     allDone: 'Τέλεια! Η λίστα είναι άδεια.',
     items: (n) => `${n} προϊόν${n !== 1 ? 'τα' : ''}`,
     settings: '⚙️ Ρυθμίσεις',
+    Language: 'Γλώσσα',
     myHouseholdCode: 'Κωδικός νοικοκυριού',
     shareWithFamily: 'Μοιραστείτε με την οικογένεια',
     changeMyName: 'Αλλαγή ονόματος',
