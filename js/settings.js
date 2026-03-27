@@ -259,7 +259,7 @@ Object.assign(App, {
         localStorage.setItem('bm_language', code);
         document.body.dir = code === 'ur' ? 'rtl' : 'ltr';
         
-        if (typeof App.applyTranslations === "function") App.applyTranslations();           // Refresh main UI
+        if (typeof App.applyTranslations === "function") App.applyTranslations();
         UI.renderHome();
         if (API.currentStoreId) {
             UI.renderAisles();
@@ -282,47 +282,34 @@ Object.assign(App, {
         modal.innerHTML = `
             <h3 style="margin-bottom:20px;">${t('howToUse')}</h3>
             <div style="margin-top:8px; font-size:15px; line-height:1.6; color:#374151;">
-                
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🏪</div>
-                    <div>
-                        <strong>Choose a Store</strong><br>
-                        <span style="color:#6b7280;">Tap a store on the home screen to open its shopping list.</span>
-                    </div>
+                    <div><strong>Choose a Store</strong><br><span style="color:#6b7280;">Tap a store on the home screen to open its shopping list.</span></div>
                 </div>
-
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🗂️</div>
-                    <div>
-                        <strong>Add Items</strong><br>
-                        <span style="color:#6b7280;">Tap an aisle, then tap products to add them to your list.</span>
-                    </div>
+                    <div><strong>Add from Aisles</strong><br><span style="color:#6b7280;">Tap an aisle, then tap any product to instantly add it to your list.</span></div>
                 </div>
-
+                <div style="display:flex; gap:12px; margin-bottom:16px;">
+                    <div style="font-size:24px; flex-shrink:0;">✏️</div>
+                    <div><strong>Add Any Item on the Fly</strong><br><span style="color:#6b7280;">Inside any aisle, tap <strong>➕ Add Product</strong> at the bottom to type in anything you need — even if it's not in the list. It gets saved for next time!</span></div>
+                </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">⭐</div>
-                    <div>
-                        <strong>Favourites</strong><br>
-                        <span style="color:#6b7280;">Tap the star next to any product to save it for quick access later.</span>
-                    </div>
+                    <div><strong>Favourites</strong><br><span style="color:#6b7280;">Tap the star next to any product to save it for quick access later.</span></div>
                 </div>
-
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🛒</div>
-                    <div>
-                        <strong>Shopping Mode</strong><br>
-                        <span style="color:#6b7280;">Tap the cart icon at the bottom to enter shopping mode — tap items to check them off as you shop.</span>
-                    </div>
+                    <div><strong>Shopping Mode</strong><br><span style="color:#6b7280;">Tap the cart icon at the bottom to enter shopping mode — tap items to check them off as you go.</span></div>
                 </div>
-
-                <div style="display:flex; gap:12px; margin-bottom:20px;">
+                <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🔄</div>
-                    <div>
-                        <strong>Reorder Aisles</strong><br>
-                        <span style="color:#6b7280;">Long-press an aisle and drag it up or down to reorder when the supermarket changes its layout.</span>
-                    </div>
+                    <div><strong>Reorder Aisles</strong><br><span style="color:#6b7280;">Long-press an aisle and drag it to match your supermarket layout.</span></div>
                 </div>
-
+                <div style="display:flex; gap:12px; margin-bottom:20px;">
+                    <div style="font-size:24px; flex-shrink:0;">🏠</div>
+                    <div><strong>Share with Family</strong><br><span style="color:#6b7280;">Go to <strong>My Code</strong> in settings and share your household code. Anyone who joins sees the same list in real time.</span></div>
+                </div>
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel" onclick="Utils.closeModal()">${t('cancel')}</button>
@@ -330,7 +317,7 @@ Object.assign(App, {
         overlay.classList.add('show');
     },
 
-    showUpgradePrompt() {
+        showUpgradePrompt() {
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modalOverlay');
 
