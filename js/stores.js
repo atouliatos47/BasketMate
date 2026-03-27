@@ -33,7 +33,6 @@ Object.assign(App, {
         document.getElementById('navStoreScreen').classList.remove('hidden');
 
         this.requestWakeLock();
-        App.applyTranslations();
         UI.renderAisles();
         UI.renderList();
     },
