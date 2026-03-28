@@ -53,6 +53,8 @@ const App = {
             if (!hasLanguage) {
                 setTimeout(() => this.showLanguageFirst(), 2200);
             } else {
+                const savedLang = localStorage.getItem('bm_language') || 'en';
+                document.body.dir = (savedLang === 'ur' || savedLang === 'ar') ? 'rtl' : 'ltr';
                 this.applyTranslations();
                 API.connectSSE();
                 API.startKeepAlive();
