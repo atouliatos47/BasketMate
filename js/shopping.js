@@ -83,8 +83,9 @@ Object.assign(App, {
             html += `<div class="shop-store-header" style="background:${store.color};">
                 <div style="display:flex;align-items:center;gap:10px;">
                     ${logoDomain ? `<img src="https://www.google.com/s2/favicons?domain=${logoDomain}&sz=64"
+                        onload="this.style.opacity='1';this.style.background='white';"
                         onerror="this.style.display='none'"
-                        style="width:24px;height:24px;border-radius:4px;background:white;padding:2px;object-fit:contain;">` : ''}
+                        style="width:24px;height:24px;border-radius:4px;background:transparent;padding:2px;object-fit:contain;opacity:0;transition:opacity 0.2s;">` : ''}
                     <span style="font-size:16px;font-weight:700;color:white;">${Utils.escapeHtml(store.name)}</span>
                     <span style="font-size:13px;color:rgba(255,255,255,0.75);margin-left:auto;">${t('items', storeItems.length)}</span>
                 </div>
