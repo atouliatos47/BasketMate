@@ -95,6 +95,7 @@ async function initDb() {
             { name: 'Lidl', color: '#0050AA', emoji: '🟡', sort_order: 3 }, { name: "Sainsbury's", color: '#F47920', emoji: '🟠', sort_order: 4 },
             { name: 'B&M', color: '#6B2D8B', emoji: '🟣', sort_order: 5 }, { name: 'Morrisons', color: '#00AA4F', emoji: '🟢', sort_order: 6 },
             { name: 'Marks & Spencer', color: '#000000', emoji: '⚫', sort_order: 7 }, { name: 'Aldi', color: '#003082', emoji: '🔷', sort_order: 8 },
+            { name: 'Waitrose', color: '#7A9A01', emoji: '🟩', sort_order: 9 }, { name: 'Amazon Fresh', color: '#FF9900', emoji: '🟧', sort_order: 10 },
         ];
         for (const s of stores) await pool.query('INSERT INTO stores (name, color, emoji, sort_order) VALUES ($1,$2,$3,$4)', [s.name, s.color, s.emoji, s.sort_order]);
         console.log('Stores seeded!');
@@ -122,6 +123,32 @@ async function initDb() {
             }
         }
         console.log('Aisle migration complete — fresh start!');
+    }
+
+    // Add Waitrose and Amazon Fresh if not already in stores, with full aisles
+    const newStores = [
+        { name: 'Waitrose', color: '#7A9A01', emoji: '🟩', sort_order: 9 },
+        { name: 'Amazon Fresh', color: '#FF9900', emoji: '🟧', sort_order: 10 },
+    ];
+    const households = await pool.query('SELECT id FROM households');
+    for (const storeData of newStores) {
+        const existing = await pool.query('SELECT id FROM stores WHERE name=$1', [storeData.name]);
+        if (existing.rows.length === 0) {
+            const result = await pool.query(
+                'INSERT INTO stores (name, color, emoji, sort_order) VALUES ($1,$2,$3,$4) RETURNING id',
+                [storeData.name, storeData.color, storeData.emoji, storeData.sort_order]
+            );
+            const storeId = result.rows[0].id;
+            for (const h of households.rows) {
+                for (const aisle of DEFAULT_AISLES) {
+                    await pool.query(
+                        'INSERT INTO aisles (household_id, store_id, name, sort_order, products) VALUES ($1,$2,$3,$4,$5)',
+                        [h.id, storeId, aisle.name, aisle.sort_order, JSON.stringify(aisle.products)]
+                    );
+                }
+            }
+            console.log(`${storeData.name} added with aisles!`);
+        }
     }
 
     console.log('Database ready');

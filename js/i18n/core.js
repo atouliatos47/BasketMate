@@ -23,7 +23,11 @@ const LANGUAGES = [
     { code: 'ur', name: 'اردو',       flag: '🇵🇰' },
     { code: 'pa', name: 'ਪੰਜਾਬੀ',     flag: '🇮🇳' },   // Punjabi (Indian)
     { code: 'bn', name: 'বাংলা',       flag: '🇧🇩' },   // Bengali
-    { code: 'zh', name: '中文',        flag: '🇨🇳' }    // Simplified Chinese
+    { code: 'zh', name: '中文',        flag: '🇨🇳' },   // Simplified Chinese
+    { code: 'ar', name: 'العربية',    flag: '🇸🇦' },   // Arabic
+    { code: 'gu', name: 'ગુજરાતી',    flag: '🇮🇳' },   // Gujarati
+    { code: 'hi', name: 'हिन्दी',      flag: '🇮🇳' },   // Hindi
+    { code: 'pt', name: 'Português',  flag: '🇵🇹' }    // Portuguese
 ];
 
 // Aisle name translations (plain text keys for reliable matching)
@@ -113,6 +117,54 @@ const AISLE_NAMES = {
         'Health & Beauty': '健康与美容',
         'Pets':            '宠物用品',
         'Household':       '家居用品',
+    },
+    ar: {
+        'Bakery':          'مخبز',
+        'Fresh Food':      'طعام طازج',
+        'Frozen Food':     'طعام مجمد',
+        'Treats & Snacks': 'حلويات ووجبات خفيفة',
+        'Food Cupboard':   'مخزن الطعام',
+        'Drinks':          'مشروبات',
+        'Baby & Toddler':  'الأطفال الرضع والصغار',
+        'Health & Beauty': 'الصحة والجمال',
+        'Pets':            'الحيوانات الأليفة',
+        'Household':       'المنزل',
+    },
+    gu: {
+        'Bakery':          'બેકરી',
+        'Fresh Food':      'તાજો ખોરાક',
+        'Frozen Food':     'ફ્રોઝ઼ન ખોરાક',
+        'Treats & Snacks': 'મિઠાઈ અને નાસ્તો',
+        'Food Cupboard':   'ખોરાક સંગ્રહ',
+        'Drinks':          'પીણાં',
+        'Baby & Toddler':  'શિશુ અને બાળક',
+        'Health & Beauty': 'સ્વાસ્થ્ય અને સૌંદર્ય',
+        'Pets':            'પાળતુ પ્રાણી',
+        'Household':       'ઘરવખરી',
+    },
+    hi: {
+        'Bakery':          'बेकरी',
+        'Fresh Food':      'ताजा खाना',
+        'Frozen Food':     'फ्रोज़न खाना',
+        'Treats & Snacks': 'मिठाई और नाश्ता',
+        'Food Cupboard':   'खाद्य भंडार',
+        'Drinks':          'पेय',
+        'Baby & Toddler':  'शिशु और बच्चे',
+        'Health & Beauty': 'स्वास्थ्य और सौंदर्य',
+        'Pets':            'पालतू जानवर',
+        'Household':       'घरेलू सामान',
+    },
+    pt: {
+        'Bakery':          'Padaria',
+        'Fresh Food':      'Produtos Frescos',
+        'Frozen Food':     'Congelados',
+        'Treats & Snacks': 'Guloseimas e Snacks',
+        'Food Cupboard':   'Despensa',
+        'Drinks':          'Bebidas',
+        'Baby & Toddler':  'Bebé e Criança',
+        'Health & Beauty': 'Saúde e Beleza',
+        'Pets':            'Animais de Estimação',
+        'Household':       'Casa',
     }
 };
 

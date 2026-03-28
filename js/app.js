@@ -49,7 +49,7 @@ const App = {
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
                 if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
-            }, 1800);
+            }, 3500);
             if (!hasLanguage) {
                 setTimeout(() => this.showLanguageFirst(), 2200);
             } else {
@@ -158,6 +158,8 @@ const App = {
             { name: 'M&S',          color: '#000000', domain: 'marksandspencer.com' },
             { name: 'Aldi',         color: '#003082', domain: 'aldi.co.uk' },
             { name: 'Co-op',        color: '#00B1A9', domain: 'coop.co.uk' },
+            { name: 'Waitrose',     color: '#7A9A01', domain: 'waitrose.com' },
+            { name: 'Amazon Fresh', color: '#FF9900', domain: 'amazon.co.uk' },
         ];
         storesContainer.innerHTML = stores.map((store, i) => {
             const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);

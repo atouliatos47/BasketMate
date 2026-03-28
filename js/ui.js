@@ -36,6 +36,12 @@ const UI = {
             'coop':         'co-operative.coop',
             'co op':        'co-operative.coop',
             'costco':       'costco.co.uk',
+            'amazon fresh': 'amazon.co.uk',
+            'amazon':       'amazon.co.uk',
+            'ocado':        'ocado.com',
+            'whole foods':  'wholefoodsmarket.com',
+            'whole foods market': 'wholefoodsmarket.com',
+            'waitrose & partners': 'waitrose.com',
         };
         return logos[name.toLowerCase()] || null;
     },

@@ -63,6 +63,9 @@ Object.assign(App, {
             'b&m': '#6B2D8B', 'aldi': '#003082', 'morrisons': '#00AA4F',
             'asda': '#78BE20', 'waitrose': '#7A9A01', 'm&s': '#000000',
             'marks & spencer': '#000000',
+            'waitrose': '#7A9A01', 'waitrose & partners': '#7A9A01',
+            'amazon fresh': '#FF9900', 'amazon': '#FF9900',
+            'ocado': '#5C2D91', 'whole foods': '#00674B', 'whole foods market': '#00674B',
         };
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modalOverlay');
@@ -74,7 +77,10 @@ Object.assign(App, {
             { name: 'B&M Purple',  hex: '#6B2D8B' },
             { name: 'Green',       hex: '#16a34a' },
             { name: 'Dark',        hex: '#1a1a2e' },
-            { name: 'Co-op Teal', hex: '#00B1A9' },
+            { name: 'Co-op Teal',  hex: '#00B1A9' },
+            { name: 'Waitrose',     hex: '#7A9A01' },
+            { name: 'Amazon',       hex: '#FF9900' },
+            { name: 'Ocado',        hex: '#5C2D91' },
         ];
         modal.innerHTML = `
             <h3>🏪 Add New Store</h3>
