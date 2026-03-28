@@ -75,6 +75,15 @@ const App = {
             'aislesSubHeader': 'tapAisleToAdd',
             'tabListLabel': 'list',
             'tabFavsLabel': 'favourites',
+            'settingsLanguageTitle': 'Language',
+            'settingsMyCodeTitle': 'myHouseholdCode',
+            'settingsMyCodeSub': 'shareWithFamily',
+            'settingsChangeNameTitle': 'changeMyName',
+            'settingsJoinTitle': 'joinAHousehold',
+            'settingsJoinSub': 'enterPartnerCode',
+            'settingsSilentTitle': 'silentMode',
+            'settingsHelpTitle': 'howToUse',
+            'settingsHelpSub': 'tipsGuide',
         };
         Object.entries(labels).forEach(([id, key]) => {
             const el = document.getElementById(id);
@@ -125,6 +134,7 @@ const App = {
         const overlay = document.getElementById('modalOverlay');
         overlay.classList.remove('show');
         if (API.householdId) {
+            document.getElementById('homeScreen').classList.remove('hidden');
             API.connectSSE();
             API.startKeepAlive();
             setTimeout(() => this.setupPushNotifications(), 3000);
@@ -171,20 +181,20 @@ const App = {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🛒</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Welcome to BasketMate</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">Create a household to get started,<br>or join an existing one with a code.</p>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('welcomeToBasketMate')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 24px;">${t('createOrJoin')}</p>
                 <button onclick="App.createHousehold()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;">
-                    ✨ Create New Household
+                    ${t('createNewHousehold')}
                 </button>
                 <div style="position:relative;margin-bottom:12px;">
                     <div style="height:1px;background:#e5e7eb;"></div>
-                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:white;padding:0 12px;color:#9ca3af;font-size:13px;">or</span>
+                    <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:white;padding:0 12px;color:#9ca3af;font-size:13px;">${t('or')}</span>
                 </div>
                 <div style="display:flex;gap:8px;">
-                    <input type="text" id="joinCodeInput" placeholder="Enter household code" maxlength="6"
+                    <input type="text" id="joinCodeInput" placeholder="${t('enterHouseholdCode')}" maxlength="6"
                         style="flex:1;padding:13px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;text-transform:uppercase;letter-spacing:2px;outline:none;text-align:center;"
                         oninput="this.value=this.value.toUpperCase()">
-                    <button onclick="App.joinHousehold()" style="padding:13px 18px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">Join</button>
+                    <button onclick="App.joinHousehold()" style="padding:13px 18px;background:#16a34a;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">${t('join')}</button>
                 </div>
                 <p id="householdError" style="color:#dc2626;font-size:13px;margin:8px 0 0;display:none;"></p>
             </div>`;
@@ -195,13 +205,13 @@ const App = {
     async createHousehold() {
         try {
             const btn = document.querySelector('#modal button');
-            if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
+            if (btn) { btn.disabled = true; btn.textContent = t('creating'); }
             const data = await API.createHousehold();
             this.showHouseholdCode(data.code);
         } catch(e) {
             Utils.showToast('Failed to create household', true);
             const btn = document.querySelector('#modal button');
-            if (btn) { btn.disabled = false; btn.textContent = '✨ Create New Household'; }
+            if (btn) { btn.disabled = false; btn.textContent = t('createNewHousehold'); }
         }
     },
 
@@ -209,13 +219,13 @@ const App = {
         document.getElementById('modal').innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">🏠</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">Your Household Code</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">Share this code with your family so they can join your list.</p>
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('yourHouseholdCode')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">${t('shareCode')}</p>
                 <div style="background:#f0f9ff;border:2px solid #005EA5;border-radius:16px;padding:20px;margin-bottom:20px;">
                     <div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#005EA5;font-family:monospace;">${code}</div>
                 </div>
-                <p style="color:#9ca3af;font-size:12px;margin:0 0 20px;">You can find this code later in the app settings.</p>
-                <button onclick="App.showNameSetup()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">Next →</button>
+                <p style="color:#9ca3af;font-size:12px;margin:0 0 20px;">${t('codeFoundInSettings') || 'You can find this code later in the app settings.'}</p>
+                <button onclick="App.showNameSetup()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">${t('next')}</button>
             </div>`;
     },
 
@@ -223,12 +233,12 @@ const App = {
         document.getElementById('modal').innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:48px;margin-bottom:12px;">👤</div>
-                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">What's your name?</h2>
-                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">So your family knows who added items to the list.</p>
-                <input type="text" id="memberNameInput" placeholder="e.g. Andreas, Sharon..." maxlength="20"
+                <h2 style="margin:0 0 6px;font-size:22px;color:#1a1a2e;">${t('whatsYourName')}</h2>
+                <p style="color:#6b7280;font-size:14px;margin:0 0 20px;">${t('nameSoFamily')}</p>
+                <input type="text" id="memberNameInput" placeholder="${t('namePlaceholder')}" maxlength="20"
                     style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:18px;outline:none;text-align:center;margin-bottom:16px;box-sizing:border-box;">
-                <p id="nameError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;">Please enter your name.</p>
-                <button onclick="App.saveMemberName()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">Let's Go! 🛒</button>
+                <p id="nameError" style="color:#dc2626;font-size:13px;margin:0 0 12px;display:none;">${t('pleaseEnterName') || 'Please enter your name.'}</p>
+                <button onclick="App.saveMemberName()" style="width:100%;padding:14px;background:#005EA5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;">${t('letsGo')}</button>
             </div>`;
         setTimeout(() => document.getElementById('memberNameInput')?.focus(), 100);
     },
@@ -248,9 +258,9 @@ const App = {
         modal.innerHTML = `
             <div style="text-align:center;padding:24px 0 20px;">
                 <div style="font-size:64px;margin-bottom:16px;animation:bounceIn 0.6s ease;">🛒</div>
-                <h2 style="margin:0 0 8px;font-size:26px;color:#005EA5;font-weight:900;">Welcome, ${Utils.escapeHtml(name)}!</h2>
-                <p style="color:#6b7280;font-size:15px;margin:0 0 8px;">Your smart shopping companion is ready.</p>
-                <p style="color:#9ca3af;font-size:13px;margin:0;">Taking you to your list...</p>
+                <h2 style="margin:0 0 8px;font-size:26px;color:#005EA5;font-weight:900;">${t('welcomeUser', Utils.escapeHtml(name))}</h2>
+                <p style="color:#6b7280;font-size:15px;margin:0 0 8px;">${t('readyMsg')}</p>
+                <p style="color:#9ca3af;font-size:13px;margin:0;">${t('takingYou')}</p>
             </div>`;
         overlay.classList.add('show');
         overlay.onclick = null;
@@ -264,7 +274,7 @@ const App = {
         const input = document.getElementById('joinCodeInput');
         const error = document.getElementById('householdError');
         const code = input.value.trim().toUpperCase();
-        if (code.length < 6) { input.style.borderColor = '#dc2626'; error.textContent = 'Please enter a 6-character code.'; error.style.display = 'block'; return; }
+        if (code.length < 6) { input.style.borderColor = '#dc2626'; error.textContent = t('pleaseEnter6Chars') || 'Please enter a 6-character code.'; error.style.display = 'block'; return; }
         try {
             input.disabled = true;
             error.style.display = 'none';
@@ -274,12 +284,13 @@ const App = {
         } catch(e) {
             input.disabled = false;
             input.style.borderColor = '#dc2626';
-            error.textContent = 'Household not found. Check the code and try again.';
+            error.textContent = t('householdNotFound') || 'Household not found. Check the code and try again.';
             error.style.display = 'block';
         }
     },
 
     startApp() {
+        document.getElementById('homeScreen').classList.remove('hidden');
         const overlay = document.getElementById('modalOverlay');
         overlay.classList.remove('show');
         overlay.addEventListener('click', (e) => { if (e.target === overlay) Utils.closeModal(); });

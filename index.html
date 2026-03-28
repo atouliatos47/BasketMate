@@ -69,7 +69,7 @@
     <div class="settings-overlay" id="settingsOverlay" onclick="App.closeSettings()"></div>
     <div class="settings-panel" id="settingsPanel">
         <div class="settings-header">
-            <span class="settings-title">⚙️ Settings</span>
+            <span class="settings-title" id="settingsTitleText">⚙️ Settings</span>
             <button class="settings-close" onclick="App.closeSettings()">✕</button>
         </div>
         <div class="settings-body">
@@ -84,8 +84,8 @@
                     </svg>
                 </div>
                 <div class="settings-item-text">
-                    <div class="settings-item-title">My Household Code</div>
-                    <div class="settings-item-sub">Share with family to join your list</div>
+                    <div class="settings-item-title" id="settingsMyCodeTitle">My Household Code</div>
+                    <div class="settings-item-sub" id="settingsMyCodeSub">Share with family to join your list</div>
                 </div>
                 <span class="settings-item-arrow">›</span>
             </div>
@@ -98,7 +98,7 @@
                     </svg>
                 </div>
                 <div class="settings-item-text">
-                    <div class="settings-item-title">Change My Name</div>
+                    <div class="settings-item-title" id="settingsChangeNameTitle">Change My Name</div>
                     <div class="settings-item-sub" id="currentNameSub">Your name on shared lists</div>
                 </div>
                 <span class="settings-item-arrow">›</span>
@@ -114,8 +114,8 @@
                     </svg>
                 </div>
                 <div class="settings-item-text">
-                    <div class="settings-item-title">Join a Household</div>
-                    <div class="settings-item-sub">Enter a partner's code to share their list</div>
+                    <div class="settings-item-title" id="settingsJoinTitle">Join a Household</div>
+                    <div class="settings-item-sub" id="settingsJoinSub">Enter a partner's code to share their list</div>
                 </div>
                 <span class="settings-item-arrow">›</span>
             </div>
@@ -131,7 +131,7 @@
                     </svg>
                 </div>
                 <div class="settings-item-text">
-                    <div class="settings-item-title">Silent Mode</div>
+                    <div class="settings-item-title" id="settingsSilentTitle">Silent Mode</div>
                     <div class="settings-item-sub" id="silentModeSub">Mute item ping sounds</div>
                 </div>
                 <div id="silentModeToggle"
@@ -170,8 +170,8 @@
                     </svg>
                 </div>
                 <div class="settings-item-text">
-                    <div class="settings-item-title">How to Use BasketMate</div>
-                    <div class="settings-item-sub">Tips and features guide</div>
+                    <div class="settings-item-title" id="settingsHelpTitle">How to Use BasketMate</div>
+                    <div class="settings-item-sub" id="settingsHelpSub">Tips and features guide</div>
                 </div>
                 <span class="settings-item-arrow">›</span>
             </div>
@@ -214,8 +214,8 @@
             <!-- LEFT: AISLES -->
             <div class="aisles-panel">
                 <div class="panel-header">
-                    <h2>🏪 Aisles</h2>
-                    <span class="panel-sub">Tap an aisle to add products</span>
+                    <h2 id="aislesHeader">🏪 Aisles</h2>
+                    <span class="panel-sub" id="aislesSubHeader">Tap an aisle to add products</span>
                 </div>
                 <div class="aisles-container" id="aislesContainer"></div>
             </div>
@@ -265,7 +265,7 @@
                         <rect x="14" y="14" width="4" height="4" rx="1" />
                     </svg>
                 </div>
-                <span class="nav-label">My Code</span>
+                <span class="nav-label" id="navLabelMyCode">My Code</span>
             </button>
             <button class="nav-btn-home" onclick="App.smartHome()">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -275,14 +275,14 @@
             </button>
             <button class="nav-btn-add" onclick="App.showAddStore()">
                 <div class="nav-icon-wrap">➕</div>
-                <span class="nav-label">Add Store</span>
+                <span class="nav-label" id="navLabelAddStore">Add Store</span>
             </button>
         </div>
         <!-- STORE SCREEN NAV -->
         <div class="nav-store-screen hidden" id="navStoreScreen">
             <button class="nav-btn-shop" id="navBtnShop" onclick="App.openShoppingMode()">
                 <div class="nav-icon-wrap">🛒</div>
-                <span class="nav-label">My List</span>
+                <span class="nav-label" id="navLabelMyList">My List</span>
             </button>
             <button class="nav-btn-back" onclick="App.smartHome()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -311,7 +311,7 @@
         <div class="nav-aisle-panel hidden" id="navAislePanel">
             <button class="nav-btn-shop" onclick="App.openShoppingMode()">
                 <div class="nav-icon-wrap">🛒</div>
-                <span class="nav-label">My List</span>
+                <span class="nav-label" id="navLabelMyList2">My List</span>
             </button>
             <button class="nav-btn-back" onclick="App.smartHome()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -321,7 +321,7 @@
             </button>
             <button class="nav-btn-add-product" id="navBtnAddProduct" onclick="UI.showAddProductInput()">
                 <div class="nav-icon-wrap">➕</div>
-                <span class="nav-label">Add Product</span>
+                <span class="nav-label" id="navLabelAddProduct">Add Product</span>
             </button>
         </div>
     </div>

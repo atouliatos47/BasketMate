@@ -109,4 +109,38 @@ TRANSLATIONS.ur = {
     nameUpdated: (name) => `نام ${name} میں تبدیل ✓`,
     savedAsFavourite: (name) => `${name} پسندیدہ میں محفوظ ⭐`,
     removedFromFavourites: (name) => `${name} پسندیدہ سے ہٹایا`,
+
+    yourNameOnSharedLists: 'مشترکہ فہرستوں پر آپ کا نام',
+
+    helpChooseStore: 'دکان منتخب کریں',
+    helpChooseStoreSub: 'خریداری کی فہرست کھولنے کے لیے ہوم اسکرین پر دکان کو تھپتھپائیں۔',
+    helpAddFromAisles: 'راہداریوں سے شامل کریں',
+    helpAddFromAislesSub: 'راہداری کو تھپتھپائیں، پھر کوئی بھی پروڈکٹ فہرست میں شامل کریں۔',
+    helpAddOnFly: 'کوئی بھی چیز شامل کریں',
+    helpAddOnFlySub: 'کسی بھی راہداری میں، نیچے ➕ پروڈکٹ شامل کریں کو تھپتھپائیں — اگلی بار کے لیے محفوظ ہو جاتا ہے!',
+    helpFavourites: 'پسندیدہ',
+    helpFavouritesSub: 'فوری رسائی کے لیے کسی بھی پروڈکٹ کے ستارے کو تھپتھپائیں۔',
+    helpShoppingMode: 'خریداری موڈ',
+    helpShoppingModeSub: 'خریداری موڈ میں جانے کے لیے کارٹ آئیکن کو تھپتھپائیں — اشیاء نشان زد کریں۔',
+    helpReorderAisles: 'راہداریاں ترتیب دیں',
+    helpReorderAislesSub: 'راہداری کو دبائے رکھیں اور ترتیب بدلنے کے لیے گھسیٹیں۔',
+    helpShareFamily: 'خاندان کے ساتھ شیئر کریں',
+    helpShareFamilySub: 'ترتیبات میں میرا کوڈ پر جائیں اور کوڈ شیئر کریں۔ سب ایک ہی فہرست دیکھتے ہیں۔',
+
+
+    upgradeModalTagline: 'ایک خریداری۔ پوری فیملی۔ ہمیشہ کے لیے۔',
+    howFamilySharingWorks: 'فیملی شیئرنگ کیسے کام کرتی ہے:',
+    onlyOnePerson: 'صرف <strong>ایک شخص</strong> کو اپ گریڈ کرنا ہوگا۔',
+    householdCodeAccess: 'آپ کے <strong>ہاؤس ہولڈ کوڈ</strong> والے سب کو خودکار مکمل رسائی ملتی ہے۔',
+    whatYouUnlock: 'آپ کیا غیر مقفل کریں گے:',
+    unlimitedStoresAisles: 'لامحدود اسٹورز، راہداریاں اور پروڈکٹس',
+    realtimeSync: 'تمام فیملی ڈیوائسز پر ریئل ٹائم سنک',
+    pushWhenAdded: 'اشیاء شامل ہونے پر اطلاعات',
+    fullAccessForAll: 'کوڈ پر سب کے لیے مکمل رسائی',
+    oneTimePayment: 'یکبار ادائیگی',
+    coversFamily: 'پوری فیملی کو ہمیشہ کے لیے',
+    upgradeMyHousehold: 'میرا گھرانہ اپ گریڈ کریں — £2.99',
+    continueWithTrial: 'آزمائشی مدت جاری رکھیں',
+    maybeLater: 'شاید بعد میں',
+
 };

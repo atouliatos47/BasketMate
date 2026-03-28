@@ -284,31 +284,31 @@ Object.assign(App, {
             <div style="margin-top:8px; font-size:15px; line-height:1.6; color:#374151;">
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🏪</div>
-                    <div><strong>Choose a Store</strong><br><span style="color:#6b7280;">Tap a store on the home screen to open its shopping list.</span></div>
+                    <div><strong>${t('helpChooseStore')}</strong><br><span style="color:#6b7280;">${t('helpChooseStoreSub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🗂️</div>
-                    <div><strong>Add from Aisles</strong><br><span style="color:#6b7280;">Tap an aisle, then tap any product to instantly add it to your list.</span></div>
+                    <div><strong>${t('helpAddFromAisles')}</strong><br><span style="color:#6b7280;">${t('helpAddFromAislesSub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">✏️</div>
-                    <div><strong>Add Any Item on the Fly</strong><br><span style="color:#6b7280;">Inside any aisle, tap <strong>➕ Add Product</strong> at the bottom to type in anything you need — even if it's not in the list. It gets saved for next time!</span></div>
+                    <div><strong>${t('helpAddOnFly')}</strong><br><span style="color:#6b7280;">${t('helpAddOnFlySub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">⭐</div>
-                    <div><strong>Favourites</strong><br><span style="color:#6b7280;">Tap the star next to any product to save it for quick access later.</span></div>
+                    <div><strong>${t('helpFavourites')}</strong><br><span style="color:#6b7280;">${t('helpFavouritesSub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🛒</div>
-                    <div><strong>Shopping Mode</strong><br><span style="color:#6b7280;">Tap the cart icon at the bottom to enter shopping mode — tap items to check them off as you go.</span></div>
+                    <div><strong>${t('helpShoppingMode')}</strong><br><span style="color:#6b7280;">${t('helpShoppingModeSub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:16px;">
                     <div style="font-size:24px; flex-shrink:0;">🔄</div>
-                    <div><strong>Reorder Aisles</strong><br><span style="color:#6b7280;">Long-press an aisle and drag it to match your supermarket layout.</span></div>
+                    <div><strong>${t('helpReorderAisles')}</strong><br><span style="color:#6b7280;">${t('helpReorderAislesSub')}</span></div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:20px;">
                     <div style="font-size:24px; flex-shrink:0;">🏠</div>
-                    <div><strong>Share with Family</strong><br><span style="color:#6b7280;">Go to <strong>My Code</strong> in settings and share your household code. Anyone who joins sees the same list in real time.</span></div>
+                    <div><strong>${t('helpShareFamily')}</strong><br><span style="color:#6b7280;">${t('helpShareFamilySub')}</span></div>
                 </div>
             </div>
             <div class="modal-actions">

@@ -9,7 +9,11 @@ const PORT         = process.env.PORT || 3000;
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const APP_DIR      = __dirname;
 
-webpush.setVapidDetails(process.env.VAPID_EMAIL, process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+if (process.env.VAPID_EMAIL && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(process.env.VAPID_EMAIL, process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+} else {
+    console.log('VAPID keys not set — push notifications disabled (local mode)');
+}
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 

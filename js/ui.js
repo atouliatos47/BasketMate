@@ -181,7 +181,7 @@ const UI = {
             <div class="aisle-card" data-aisle-id="${aisle.id}" onclick="UI.openAislePanel(${aisle.id})">
                 <div class="aisle-card-header">
                     <div class="aisle-card-meta">
-                        <span class="aisle-card-name">${Utils.escapeHtml(aisle.name)}</span>
+                        <span class="aisle-card-name">${Utils.escapeHtml(translateAisleName(aisle.name))}</span>
                         <span class="aisle-card-count">${products.length ? products.length + ' products' : 'No products'}</span>
                         ${inListCount ? `<span class="aisle-in-list-count">✓ ${inListCount} in list</span>` : ''}
                     </div>
@@ -197,7 +197,7 @@ const UI = {
         if (!aisle) return;
         this.currentAislePanel = aisleId;
         this.lastAislePanel = aisleId;
-        document.getElementById('aislePanelTitle').textContent = aisle.name;
+        document.getElementById('aislePanelTitle').textContent = translateAisleName(aisle.name);
         this.renderAislePanelProducts(aisleId);
         document.getElementById('aislePanelOverlay').classList.add('show');
         document.getElementById('navStoreScreen').classList.add('hidden');
@@ -596,7 +596,7 @@ const UI = {
         let html = '';
         sortedAisles.forEach(aisle => {
             html += `<div class="aisle-group">
-                <div class="aisle-group-header"><span>🏪</span><span>${Utils.escapeHtml(aisle.name)}</span><span class="aisle-group-count">${grouped[aisle.id].length}</span></div>
+                <div class="aisle-group-header"><span>🏪</span><span>${Utils.escapeHtml(translateAisleName(aisle.name))}</span><span class="aisle-group-count">${grouped[aisle.id].length}</span></div>
                 ${grouped[aisle.id].sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderItem(item)).join('')}
             </div>`;
         });

@@ -116,5 +116,41 @@ TRANSLATIONS.en = {
     nameUpdated: (name) => `Name updated to ${name} ✓`,
     savedAsFavourite: (name) => `${name} saved as favourite ⭐`,
     removedFromFavourites: (name) => `${name} removed from favourites`,
-    save: 'Save'
+    save: 'Save',
+
+    welcomeUser: (name) => `Welcome, ${name}!`,
+    readyMsg: 'Your smart shopping companion is ready.',
+    takingYou: 'Taking you to your list...',
+
+    helpChooseStore: 'Choose a Store',
+    helpChooseStoreSub: 'Tap a store on the home screen to open its shopping list.',
+    helpAddFromAisles: 'Add from Aisles',
+    helpAddFromAislesSub: 'Tap an aisle, then tap any product to instantly add it to your list.',
+    helpAddOnFly: 'Add Any Item on the Fly',
+    helpAddOnFlySub: 'Inside any aisle, tap ➕ Add Product at the bottom to type in anything you need — even if it\'s not in the list. It gets saved for next time!',
+    helpFavourites: 'Favourites',
+    helpFavouritesSub: 'Tap the star next to any product to save it for quick access later.',
+    helpShoppingMode: 'Shopping Mode',
+    helpShoppingModeSub: 'Tap the cart icon at the bottom to enter shopping mode — tap items to check them off as you go.',
+    helpReorderAisles: 'Reorder Aisles',
+    helpReorderAislesSub: 'Long-press an aisle and drag it to match your supermarket layout.',
+    helpShareFamily: 'Share with Family',
+    helpShareFamilySub: 'Go to My Code in settings and share your household code. Anyone who joins sees the same list in real time.',
+
+
+    upgradeModalTagline: 'One purchase. Your whole family. Forever.',
+    howFamilySharingWorks: 'How family sharing works:',
+    onlyOnePerson: 'Only <strong>one person</strong> needs to upgrade.',
+    householdCodeAccess: 'Everyone using your <strong>household code</strong> gets full access automatically — no extra payments needed.',
+    whatYouUnlock: 'What you unlock:',
+    unlimitedStoresAisles: 'Unlimited stores, aisles & products',
+    realtimeSync: 'Real-time sync across all family devices',
+    pushWhenAdded: 'Push notifications when items are added',
+    fullAccessForAll: 'Full access for everyone on your code',
+    oneTimePayment: 'One-time payment',
+    coversFamily: 'Covers your whole family forever',
+    upgradeMyHousehold: 'Upgrade My Household — £2.99',
+    continueWithTrial: 'Continue with trial',
+    maybeLater: 'Maybe later',
+
 };

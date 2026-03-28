@@ -116,5 +116,41 @@ TRANSLATIONS.ro = {
     nameUpdated: (name) => `Numele actualizat la ${name} ✓`,
     savedAsFavourite: (name) => `${name} salvat ca favorit ⭐`,
     removedFromFavourites: (name) => `${name} eliminat din favorite`,
-    save: 'Salvează'
+    save: 'Salvează',
+
+    welcomeUser: (name) => `Bun venit, ${name}!`,
+    readyMsg: 'Tovarășul tău inteligent de cumpărături este gata.',
+    takingYou: 'Te ducem la lista ta...',
+
+    helpChooseStore: 'Alege un magazin',
+    helpChooseStoreSub: 'Apasă un magazin pe ecranul principal pentru a deschide lista de cumpărături.',
+    helpAddFromAisles: 'Adaugă din raioane',
+    helpAddFromAislesSub: 'Apasă un raion, apoi orice produs pentru a-l adăuga în listă.',
+    helpAddOnFly: 'Adaugă orice produs',
+    helpAddOnFlySub: 'În orice raion, apasă ➕ Adaugă produs la final pentru a tasta orice ai nevoie — se salvează pentru data viitoare!',
+    helpFavourites: 'Favorite',
+    helpFavouritesSub: 'Apasă steluța de lângă orice produs pentru acces rapid.',
+    helpShoppingMode: 'Mod cumpărături',
+    helpShoppingModeSub: 'Apasă iconița coșului pentru a intra în modul cumpărături — bifează produsele pe măsură ce le iei.',
+    helpReorderAisles: 'Reordonează raioanele',
+    helpReorderAislesSub: 'Ține apăsat un raion și trage-l pentru a schimba ordinea.',
+    helpShareFamily: 'Împărtășește cu familia',
+    helpShareFamilySub: 'Mergi la Codul meu în setări și împărtășește codul. Toți văd aceeași listă în timp real.',
+
+
+    upgradeModalTagline: 'O singură achiziție. Toată familia. Pentru totdeauna.',
+    howFamilySharingWorks: 'Cum funcționează partajarea familiei:',
+    onlyOnePerson: 'Doar <strong>o persoană</strong> trebuie să facă upgrade.',
+    householdCodeAccess: 'Toți cu <strong>codul tău</strong> primesc acces complet automat.',
+    whatYouUnlock: 'Ce deblochezi:',
+    unlimitedStoresAisles: 'Magazine, culoare și produse nelimitate',
+    realtimeSync: 'Sincronizare în timp real pe toate dispozitivele',
+    pushWhenAdded: 'Notificări când sunt adăugate articole',
+    fullAccessForAll: 'Acces complet pentru toți cei de pe codul tău',
+    oneTimePayment: 'Plată unică',
+    coversFamily: 'Acoperă toată familia ta pentru totdeauna',
+    upgradeMyHousehold: 'Upgrade gospodăria mea — £2.99',
+    continueWithTrial: 'Continuă perioada de probă',
+    maybeLater: 'Poate mai târziu',
+
 };
