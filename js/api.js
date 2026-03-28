@@ -68,10 +68,6 @@ const API = {
         this.householdCode = data.code;
         localStorage.setItem('bm_household_id', data.id);
         localStorage.setItem('bm_household_code', data.code);
-        // Give joiner their own fresh 15-day trial from join date
-        const trialStart = new Date().toISOString();
-        localStorage.setItem('bm_trial_started', trialStart);
-        this.trialStartedAt = trialStart;
         return data;
     },
 
@@ -110,7 +106,18 @@ const API = {
             this.trialStartedAt = data.trialStartedAt || localStorage.getItem('bm_trial_started');
             console.log('Init:', this.stores.length, 'stores,', this.aisles.length, 'aisles,', this.items.length, 'items', '| Premium:', this.isPremium, '| Trial days left:', this.trialDaysLeft);
             // Apply free tier restrictions if trial expired
-            if (!this.hasFullAccess) this.applyFreeTierRestrictions();
+            if (!this.hasFullAccess) {
+                this.applyFreeTierRestrictions();
+                // No real-time sync on free tier — close SSE after init
+                setTimeout(() => {
+                    if (this.eventSource) {
+                        this.eventSource.close();
+                        this.eventSource = null;
+                    }
+                    const badge = document.getElementById('connectionBadge');
+                    if (badge) { badge.textContent = '⚠ Free Plan'; badge.style.color = '#d97706'; }
+                }, 500);
+            }
             UI.renderHome();
             UI.renderTrialBanner();
             const badge = document.getElementById('connectionBadge');
@@ -357,8 +364,8 @@ const API = {
 
     applyFreeTierRestrictions() {
         const FREE_STORES = ['tesco', 'asda', 'lidl'];
-        const FREE_AISLE_LIMIT = 5;
-        const FREE_PRODUCT_LIMIT = 8;
+        const FREE_AISLE_LIMIT = 3;
+        const FREE_PRODUCT_LIMIT = 5;
 
         // 1. Keep only the 3 free stores (by name match)
         const allowedStores = this.stores.filter(s => FREE_STORES.includes(s.name.toLowerCase()));
