@@ -27,7 +27,8 @@ const LANGUAGES = [
     { code: 'ar', name: 'العربية',    flag: '🇸🇦' },   // Arabic
     { code: 'gu', name: 'ગુજરાતી',    flag: '🇮🇳' },   // Gujarati
     { code: 'hi', name: 'हिन्दी',      flag: '🇮🇳' },   // Hindi
-    { code: 'pt', name: 'Português',  flag: '🇵🇹' }    // Portuguese
+    { code: 'pt', name: 'Português',  flag: '🇵🇹' },   // Portuguese
+    { code: 'ru', name: 'Русский',    flag: '🇷🇺' }    // Russian
 ];
 
 // Aisle name translations (plain text keys for reliable matching)
@@ -165,6 +166,18 @@ const AISLE_NAMES = {
         'Health & Beauty': 'Saúde e Beleza',
         'Pets':            'Animais de Estimação',
         'Household':       'Casa',
+    },
+    ru: {
+        'Bakery':          'Выпечка',
+        'Fresh Food':      'Свежие продукты',
+        'Frozen Food':     'Замороженные продукты',
+        'Treats & Snacks': 'Сладости и снеки',
+        'Food Cupboard':   'Бакалея',
+        'Drinks':          'Напитки',
+        'Baby & Toddler':  'Для малышей',
+        'Health & Beauty': 'Здоровье и красота',
+        'Pets':            'Зоотовары',
+        'Household':       'Хозтовары',
     }
 };
 
