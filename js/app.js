@@ -45,6 +45,7 @@ const App = {
 
         if (hasHousehold) {
             API.memberName = localStorage.getItem('bm_member_name') || 'Someone';
+            document.getElementById('homeScreen').classList.remove('hidden');
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
                 if (splash) { splash.classList.add('fade-out'); setTimeout(() => { splash.style.display = 'none'; }, 600); }
