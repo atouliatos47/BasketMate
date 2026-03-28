@@ -129,7 +129,7 @@ const App = {
     pickLanguage(code) {
         localStorage.setItem('bm_language', code);
         window.dispatchEvent(new Event('languageChanged'));
-        document.body.dir = code === 'ur' ? 'rtl' : 'ltr';
+        document.body.dir = (code === 'ur' || code === 'ar') ? 'rtl' : 'ltr';
         this.applyTranslations();
         const overlay = document.getElementById('modalOverlay');
         overlay.classList.remove('show');

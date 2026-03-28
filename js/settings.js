@@ -257,7 +257,7 @@ Object.assign(App, {
 
     changeLanguage(code) {
         localStorage.setItem('bm_language', code);
-        document.body.dir = code === 'ur' ? 'rtl' : 'ltr';
+        document.body.dir = (code === 'ur' || code === 'ar') ? 'rtl' : 'ltr';
         
         if (typeof App.applyTranslations === "function") App.applyTranslations();
         UI.renderHome();

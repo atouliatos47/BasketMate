@@ -117,7 +117,7 @@ Object.assign(App, {
             if (noAisle.length) {
                 // ✅ Translate "Other" header
                 html += `<div class="shop-aisle-group">
-                    <div class="shop-aisle-header">${t('other')}</div>
+                    <div class="shop-aisle-header">📦 Other</div>
                     ${noAisle.sort((a, b) => a.name.localeCompare(b.name)).map(item => this.renderShopItem(item)).join('')}
                 </div>`;
             }
