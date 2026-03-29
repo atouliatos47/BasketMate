@@ -13,33 +13,33 @@ const UI = {
     // Known store logo domains
     getStoreLogo(name) {
         const logos = {
-            'tesco':        'tesco.com',
-            'iceland':      'iceland.co.uk',
-            'lidl':         'lidl.co.uk',
-            "sainsbury's":  'sainsburys.co.uk',
-            'sainsburys':   'sainsburys.co.uk',
-            'b&m':              'bmstores.co.uk',
-            'aldi':             'aldi.co.uk',
-            'morrisons':        'morrisons.com',
-            'marks & spencer':  'marksandspencer.com',
-            'm&s':              'marksandspencer.com',
-            'asda':         'asda.com',
-            'morrisons':    'morrisons.com',
-            'waitrose':     'waitrose.com',
+            'tesco': 'tesco.com',
+            'iceland': 'iceland.co.uk',
+            'lidl': 'lidl.co.uk',
+            "sainsbury's": 'sainsburys.co.uk',
+            'sainsburys': 'sainsburys.co.uk',
+            'b&m': 'bmstores.co.uk',
+            'aldi': 'aldi.co.uk',
+            'morrisons': 'morrisons.com',
             'marks & spencer': 'marksandspencer.com',
-            'm&s':          'marksandspencer.com',
-            'boots':        'boots.com',
-            'wilko':        'wilko.com',
+            'm&s': 'marksandspencer.com',
+            'asda': 'asda.com',
+            'morrisons': 'morrisons.com',
+            'waitrose': 'waitrose.com',
+            'marks & spencer': 'marksandspencer.com',
+            'm&s': 'marksandspencer.com',
+            'boots': 'boots.com',
+            'wilko': 'wilko.com',
             'home bargains': 'homebargains.co.uk',
-            'poundland':    'poundland.co.uk',
-            'co-op':        'co-operative.coop',
-            'coop':         'co-operative.coop',
-            'co op':        'co-operative.coop',
-            'costco':       'costco.co.uk',
+            'poundland': 'poundland.co.uk',
+            'co-op': 'co-operative.coop',
+            'coop': 'co-operative.coop',
+            'co op': 'co-operative.coop',
+            'costco': 'costco.co.uk',
             'amazon fresh': 'amazon.co.uk',
-            'amazon':       'amazon.co.uk',
-            'ocado':        'ocado.com',
-            'whole foods':  'wholefoodsmarket.com',
+            'amazon': 'amazon.co.uk',
+            'ocado': 'ocado.com',
+            'whole foods': 'wholefoodsmarket.com',
             'whole foods market': 'wholefoodsmarket.com',
             'waitrose & partners': 'waitrose.com',
         };
@@ -54,7 +54,7 @@ const UI = {
 
         container.innerHTML = stores.map(store => {
             const itemCount = API.items.filter(i => i.storeId === store.id && !i.isChecked).length;
-            const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+            const initials = store.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
             const logoDomain = this.getStoreLogo(store.name);
 
             return `
@@ -63,7 +63,7 @@ const UI = {
                     <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:${store.color};border-radius:16px 0 0 16px;"></div>
                     <div style="display:flex;flex-direction:column;align-items:center;padding:18px 12px 14px;gap:10px;">
                         ${logoDomain
-                            ? `<div style="width:48px;height:48px;border-radius:12px;background:white;border:1px solid var(--ink-100);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-xs);">
+                    ? `<div style="width:48px;height:48px;border-radius:12px;background:white;border:1px solid var(--ink-100);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-xs);">
                                 <img src="https://www.google.com/s2/favicons?domain=${logoDomain}&sz=128"
                                     alt="${Utils.escapeHtml(store.name)}"
                                     onload="this.style.opacity=1"
@@ -71,10 +71,10 @@ const UI = {
                                     style="width:32px;height:32px;object-fit:contain;opacity:0;transition:opacity 0.3s;border-radius:4px;"
                                     id="avatar-${store.id}">
                                </div>`
-                            : `<div style="width:48px;height:48px;border-radius:12px;background:${store.color};display:flex;align-items:center;justify-content:center;">
+                    : `<div style="width:48px;height:48px;border-radius:12px;background:${store.color};display:flex;align-items:center;justify-content:center;">
                                 <span style="font-size:16px;font-weight:800;color:white;letter-spacing:-0.5px;">${initials}</span>
                                </div>`
-                        }
+                }
                         <div style="text-align:center;width:100%;">
                             <div style="font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${Utils.escapeHtml(store.name)}</div>
                             <div style="font-size:11px;font-weight:500;margin-top:3px;color:${itemCount ? 'var(--green)' : 'var(--text-secondary)'};">
@@ -115,7 +115,7 @@ const UI = {
     },
 
     renderStats() {
-        const total   = API.storeItems.length;
+        const total = API.storeItems.length;
         const checked = API.storeItems.filter(i => i.isChecked).length;
         const el = document.getElementById('statsBar');
         if (!el) return;
@@ -130,7 +130,7 @@ const UI = {
         const aislesHtml = aisles.length
             ? aisles.sort((a, b) => a.sortOrder - b.sortOrder).map(a => this.renderAisleCard(a)).join('')
             : `<div class="empty-state"><div class="empty-icon">🏪</div><p>No aisles yet!</p><p class="empty-sub">Tap + Add Aisle below.</p></div>`;
-        container.innerHTML = `${aislesHtml}<button class="add-aisle-btn" onclick="UI.showAddAisle()">＋ Add Aisle</button>`;
+        container.innerHTML = `${aislesHtml}<button class="add-aisle-btn" onclick="UI.showAddAisle()">＋ ${t('addAisle')}</button>`;
         this.initSortable(container);
     },
 
@@ -171,7 +171,7 @@ const UI = {
                 });
                 try {
                     await API.reorderAisles(order);
-                } catch(e) {
+                } catch (e) {
                     Utils.showToast('Failed to save order', true);
                 }
             }
@@ -188,8 +188,8 @@ const UI = {
                 <div class="aisle-card-header">
                     <div class="aisle-card-meta">
                         <span class="aisle-card-name">${Utils.escapeHtml(translateAisleName(aisle.name))}</span>
-                        <span class="aisle-card-count">${products.length ? products.length + ' products' : 'No products'}</span>
-                        ${inListCount ? `<span class="aisle-in-list-count">✓ ${inListCount} in list</span>` : ''}
+                        <span class="aisle-card-count">${products.length ? t('productsCount', products.length) : t('noProducts')}</span>
+                        ${inListCount ? `<span class="aisle-in-list-count">✔ ${inListCount} ${t('inList').replace('✔ ', '')}</span>` : ''}
                     </div>
                     <button class="aisle-delete-btn" onclick="event.stopPropagation(); UI.confirmDeleteAisle(${aisle.id})">🗑</button>
                     <span class="aisle-card-arrow">›</span>
@@ -241,7 +241,7 @@ const UI = {
                         data-name="${name.replace(/"/g, '&quot;')}"
                         data-in-list="${inList}">
                         <span class="panel-chip-name">${Utils.escapeHtml(name)}</span>
-                        <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? '\u2713 In list' + (qty > 1 ? ' x' + qty : '') : '+ Add'}</span>
+                       <span class="panel-chip-badge ${inList ? 'in' : 'add'}">${inList ? t('inList') + (qty > 1 ? ' x' + qty : '') : t('add')}</span>
                     </div>
                     <button class="chip-delete-btn" onclick="UI.deleteProduct(${aisleId}, '${name.replace(/'/g, "\\'")}')">🗑</button>
                 </div>`;
@@ -281,13 +281,13 @@ const UI = {
         modal.innerHTML = `
             <div style="text-align:center;padding:8px 0 16px;">
                 <div style="font-size:36px;margin-bottom:10px;">➕</div>
-                <h3 style="margin:0 0 16px;">Add Product</h3>
-                <input type="text" id="addProductInput" placeholder="e.g. White Bread..."
+                <h3 style="margin:0 0 16px;">${t('addProduct2')}</h3>
+                <input type="text" id="addProductInput" placeholder="${t('addProductPlaceholder')}"
                     style="width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;outline:none;text-align:center;box-sizing:border-box;margin-bottom:16px;"
                     onkeypress="if(event.key==='Enter') UI.addProductFromPanel(${aisleId})">
                 <div class="modal-actions">
-                    <button class="modal-btn cancel" onclick="Utils.closeModal()">Cancel</button>
-                    <button class="modal-btn confirm" onclick="UI.addProductFromPanel(${aisleId})">Add</button>
+                    <button class="modal-btn cancel" onclick="Utils.closeModal()">${t('cancel')}</button>
+                    <button class="modal-btn confirm" onclick="UI.addProductFromPanel(${aisleId})">${t('add')}</button>
                 </div>
             </div>`;
         overlay.classList.add('show');
@@ -306,7 +306,7 @@ const UI = {
             await API.addProduct(aisleId, name);
             this.renderAislePanelProducts(aisleId);
             Utils.showToast(`${name} added to aisle ✓`);
-        } catch(e) { Utils.showToast('Failed to add product', true); }
+        } catch (e) { Utils.showToast('Failed to add product', true); }
     },
 
     async lookupPrice(name, aisleId) {
@@ -372,7 +372,7 @@ const UI = {
             // Debug: log raw response for troubleshooting
             console.log('Price API raw response:', JSON.stringify(raw).slice(0, 500));
 
-        } catch(e) {
+        } catch (e) {
             const results = document.getElementById('priceResults');
             if (results) results.innerHTML = `<p style="color:#dc2626;text-align:center;padding:16px;">Failed to fetch prices.<br><small>${e.message}</small></p>`;
             console.error('Price lookup error:', e);
@@ -385,7 +385,7 @@ const UI = {
         this.renderAislePanelProducts(aisleId);
         UI.renderList();
         Utils.showToast(`${name} removed ✓`);
-        API.deleteItem(itemId).catch(() => {});
+        API.deleteItem(itemId).catch(() => { });
     },
 
     async removePanelItem(itemId, aisleId) {
@@ -394,7 +394,7 @@ const UI = {
             Utils.closeModal();
             Utils.showToast('Removed from list ✓');
             this.renderAislePanelProducts(aisleId);
-        } catch(e) { Utils.showToast('Failed to remove', true); }
+        } catch (e) { Utils.showToast('Failed to remove', true); }
     },
 
     async handlePanelProductTap(name, aisleId, chipEl) {
@@ -439,7 +439,7 @@ const UI = {
                     Utils.showToast('Failed to add item', true);
                 });
             }
-        } catch(e) {
+        } catch (e) {
             Utils.showToast('Failed to add item', true);
         } finally {
             // Release lock after 1 second
@@ -463,7 +463,7 @@ const UI = {
                 btn.classList.add('active');
                 Utils.showToast(`${name} saved as favourite ⭐`);
             }
-        } catch(e) { Utils.showToast('Failed to update favourite', true); }
+        } catch (e) { Utils.showToast('Failed to update favourite', true); }
     },
 
     renderFavourites() {
@@ -525,7 +525,7 @@ const UI = {
                 }
                 Utils.showToast(`${name} added! 🛒`);
             }
-        } catch(e) { Utils.showToast('Failed to add item', true); }
+        } catch (e) { Utils.showToast('Failed to add item', true); }
     },
 
     // ===== ADD / DELETE AISLE =====
@@ -556,7 +556,7 @@ const UI = {
             await API.addAisle(name);
             Utils.closeModal();
             Utils.showToast(`${name} added!`);
-        } catch(e) { Utils.showToast('Failed to add aisle', true); }
+        } catch (e) { Utils.showToast('Failed to add aisle', true); }
     },
 
     confirmDeleteAisle(aisleId) {
@@ -579,7 +579,7 @@ const UI = {
             await API.deleteAisle(aisleId);
             Utils.closeModal();
             Utils.showToast('Aisle deleted');
-        } catch(e) { Utils.showToast('Failed to delete aisle', true); }
+        } catch (e) { Utils.showToast('Failed to delete aisle', true); }
     },
 
     // ===== SHOPPING LIST =====
@@ -588,7 +588,7 @@ const UI = {
         if (!container) return;
         const items = API.storeItems;
         if (!items.length) {
-            container.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><p>List is empty!</p><p class="empty-sub">Tap an aisle to add products.</p></div>`;
+            container.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><p>${t('listIsEmptyMsg')}</p><p class="empty-sub">${t('tapAisleMsg')}</p></div>`;
             return;
         }
         const grouped = {};
@@ -603,13 +603,13 @@ const UI = {
         sortedAisles.forEach(aisle => {
             html += `<div class="aisle-group">
                 <div class="aisle-group-header"><span>🏪</span><span>${Utils.escapeHtml(translateAisleName(aisle.name))}</span><span class="aisle-group-count">${grouped[aisle.id].length}</span></div>
-                ${grouped[aisle.id].sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderItem(item)).join('')}
+                ${grouped[aisle.id].sort((a, b) => a.name.localeCompare(b.name)).map(item => this.renderItem(item)).join('')}
             </div>`;
         });
         if (noAisle.length) {
             html += `<div class="aisle-group">
                 <div class="aisle-group-header"><span>📦</span><span>Other</span><span class="aisle-group-count">${noAisle.length}</span></div>
-                ${noAisle.sort((a,b) => a.name.localeCompare(b.name)).map(item => this.renderItem(item)).join('')}
+                ${noAisle.sort((a, b) => a.name.localeCompare(b.name)).map(item => this.renderItem(item)).join('')}
             </div>`;
         }
         container.innerHTML = html;
@@ -639,13 +639,13 @@ const UI = {
                         // Remove from local state and re-render
                         API.items = API.items.filter(i => i.id !== id);
                         this.renderList();
-                    } catch(e) {
+                    } catch (e) {
                         API.items = API.items.filter(i => i.id !== id);
                         this.renderList();
                     }
                 }, 700);
             }
-        } catch(e) {
+        } catch (e) {
             console.log('handleCheck error:', e);
         }
     },
@@ -667,7 +667,7 @@ const UI = {
 
     async confirmDelete(id) {
         try { await API.deleteItem(id); Utils.closeModal(); Utils.showToast('Removed ✓'); }
-        catch(e) { Utils.showToast('Failed to remove item', true); }
+        catch (e) { Utils.showToast('Failed to remove item', true); }
     },
 
     // ===== PRODUCT LIBRARY =====
@@ -723,7 +723,7 @@ const UI = {
                         <button class="del-btn" onclick="UI.deleteProduct(${aisleId}, '${n.replace(/'/g, "\\'")}')">🗑</button>
                     </div>`).join('');
             }
-        } catch(e) { Utils.showToast('Failed to add product', true); }
+        } catch (e) { Utils.showToast('Failed to add product', true); }
     },
 
     renderTrialBanner() { /* Disabled in private instance */ },
@@ -742,6 +742,6 @@ const UI = {
             }
             // Re-render aisle panel if open
             if (this.currentAislePanel === aisleId) this.renderAislePanelProducts(aisleId);
-        } catch(e) { Utils.showToast('Failed to delete product', true); }
+        } catch (e) { Utils.showToast('Failed to delete product', true); }
     }
 };
